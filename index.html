@@ -6,8 +6,8 @@
 <title>BureauFacile RDC</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#1646c7">
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-512.png">
+<link rel="apple-touch-icon" href="icon-512.png">
 <style>
 :root{--bg:#eef1f6;--card:#fff;--tx:#0e1b3d;--mut:#55607a;--pri:#1646c7;--on:#fff;--sun:#ffc928;--red:#d6362b;--ok:#17803f;--line:#d9dfeb;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -46,6 +46,7 @@ p{margin:0 0 12px}.mut{color:var(--mut)}small{color:var(--mut)}
 .tabs{display:flex;gap:6px;overflow-x:auto;margin:12px 0}
 .tabs button{flex:none;min-height:40px;padding:0 12px;border-radius:999px;border:1.5px solid var(--line);background:var(--card);color:var(--tx);font:inherit;font-size:.85rem;cursor:pointer}
 .tabs button.on{background:var(--pri);color:var(--on);border-color:var(--pri)}
+.fbtn{display:block;width:100%;margin-top:8px;padding:10px 14px;min-height:48px;text-align:left;white-space:normal;overflow-wrap:anywhere;word-break:break-all;line-height:1.3;border:2px solid currentColor;border-radius:12px;background:transparent;color:inherit;font:inherit;font-weight:700;cursor:pointer}
 .badge{display:inline-block;padding:3px 10px;border-radius:999px;font-weight:700;font-size:.85rem;background:var(--sun);color:#0e1b3d}
 .badge.dv{background:var(--red);color:#fff}
 .big{font-size:3rem;line-height:1}
@@ -265,7 +266,7 @@ function adminCard(r){
  <h3>${sv.icon||""} ${esc(sv.name)}</h3>
  <p class="mut">${esc(r.client_name)}, ${esc(r.client_phone)}<br>${new Date(r.created_at).toLocaleString("fr-FR")}${r.pages?", "+r.pages+" pages":""}</p>
  <p>${esc(r.description)}</p>
- ${(r.request_files||[]).map(f=>`<button class="btn o w" onclick="dl('${f.id}')">⬇️ ${esc(f.file_name)}</button>`).join("")}
+ ${(r.request_files||[]).map(f=>`<button class="fbtn" onclick="dl('${f.id}')">⬇️ ${esc(f.file_name)}</button>`).join("")}
  <label for="s${r.id}">Statut</label><select id="s${r.id}" onchange="setSt('${r.id}',this.value)">${CODE.map((c,k)=>`<option value="${c}"${k===st?" selected":""}>${ST[k]}</option>`).join("")}</select>
  <a class="btn g w" href="${wa(m,intl(r.client_phone))}" target="_blank" rel="noopener">💬 Contacter le client</a>
  <a class="btn o w" href="tel:${esc(r.client_phone)}">📞 Appeler</a></div>`;
