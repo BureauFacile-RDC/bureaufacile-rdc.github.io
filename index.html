@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BureauFacile RDC</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1646c7">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--bg:#eef1f6;--card:#fff;--tx:#0e1b3d;--mut:#55607a;--pri:#1646c7;--on:#fff;--sun:#ffc928;--red:#d6362b;--ok:#17803f;--line:#d9dfeb;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1226;--card:#141d38;--tx:#eef1fa;--mut:#9ca8c6;--pri:#7aa2ff;--on:#08122c;--line:#26335a;--ok:#4cc77f}}
+:root[data-theme="dark"]{--bg:#0b1226;--card:#141d38;--tx:#eef1fa;--mut:#9ca8c6;--pri:#7aa2ff;--on:#08122c;--line:#26335a;--ok:#4cc77f}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+#app{max-width:560px;margin:0 auto;padding:16px 16px 96px}
+h1,h2,h3{line-height:1.15;margin:0 0 8px;letter-spacing:-.01em}
+h1{font-size:2rem;font-weight:800}h2{font-size:1.35rem;font-weight:750;margin-top:24px}h3{font-size:1.1rem}
+p{margin:0 0 12px}.mut{color:var(--mut)}small{color:var(--mut)}
+.hero{background:var(--pri);color:var(--on);border-radius:20px;padding:22px 20px;margin-top:8px}
+.hero p{opacity:.92}
+.hero .btn{display:flex;width:100%;margin-top:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:48px;padding:0 18px;border-radius:12px;border:2px solid transparent;font:inherit;font-weight:700;text-decoration:none;cursor:pointer;background:var(--pri);color:var(--on)}
+.btn.y{background:var(--sun);color:#0e1b3d}
+.btn.o{background:transparent;border-color:currentColor;color:inherit}
+.btn.w{width:100%;margin-top:8px}
+.btn.g{background:#1fa855;color:#fff}
+.hero .btn.o{color:var(--on)}
+.btn:focus-visible,.row:focus-visible,nav button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.list{background:var(--card);border-radius:16px;border:1px solid var(--line);overflow:hidden}
+.row{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;background:none;border:0;border-bottom:1px solid var(--line);text-align:left;font:inherit;color:inherit;cursor:pointer;min-height:60px}
+.row:last-child{border-bottom:0}
+.row .ic{font-size:1.5rem;width:44px;height:44px;display:grid;place-items:center;background:var(--bg);border-radius:12px;flex:none}
+.row .tx{flex:1;font-weight:650;line-height:1.25}
+.row .pr{display:block;font-size:.85rem;font-weight:600;color:var(--pri);margin-top:2px}
+.go{font-size:.8rem;font-weight:700;color:var(--pri);border:1.5px solid var(--pri);border-radius:999px;padding:5px 10px;white-space:nowrap}
+.row .pr.dv{color:var(--red)}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:4;display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--card);border-bottom:1px solid var(--line);font-size:1.05rem}
+.logo{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:var(--sun);color:#0e1b3d;font-weight:900;font-size:.9rem}
+.link{background:none;border:0;color:var(--pri);font:inherit;font-weight:700;padding:12px 0;cursor:pointer}
+.note{margin-top:16px;padding:12px 14px;border-radius:12px;border:1px dashed var(--mut);color:var(--mut);font-size:.9rem}
+.warn{padding:10px 12px;border-radius:12px;background:var(--sun);color:#0e1b3d;font-size:.9rem}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin:12px 0}
+.tabs button{flex:none;min-height:40px;padding:0 12px;border-radius:999px;border:1.5px solid var(--line);background:var(--card);color:var(--tx);font:inherit;font-size:.85rem;cursor:pointer}
+.tabs button.on{background:var(--pri);color:var(--on);border-color:var(--pri)}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-weight:700;font-size:.85rem;background:var(--sun);color:#0e1b3d}
+.badge.dv{background:var(--red);color:#fff}
+.big{font-size:3rem;line-height:1}
+label{display:block;font-weight:650;margin:14px 0 6px}
+input,select,textarea{width:100%;min-height:48px;padding:10px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);color:var(--tx);font:inherit}
+textarea{min-height:110px;resize:vertical}
+.err{color:var(--red);font-weight:650;margin-top:10px;min-height:1.4em}
+.back{background:none;border:0;color:var(--mut);font:inherit;padding:8px 0;cursor:pointer}
+.ticket{position:relative;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 16px 14px;margin:14px 0}
+.ticket::before,.ticket::after{content:"";position:absolute;top:58px;width:18px;height:18px;border-radius:50%;background:var(--bg);border:1px solid var(--line)}
+.ticket::before{left:-10px}.ticket::after{right:-10px}
+.ticket .no{font:800 1.3rem/1 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.04em}
+.ticket .hd{display:flex;justify-content:space-between;align-items:center;gap:8px;padding-bottom:22px;border-bottom:2px dashed var(--line);margin-bottom:12px}
+.ticket .stamp{border:2px solid var(--red);color:var(--red);border-radius:6px;padding:2px 8px;font-weight:800;font-size:.85rem;transform:rotate(-4deg)}
+.steps{display:flex;gap:4px;margin:12px 0 4px}
+.steps i{flex:1;height:8px;border-radius:4px;background:var(--line)}
+.steps i.on{background:var(--ok)}
+.steps+.lbl{display:grid;grid-template-columns:repeat(4,1fr);text-align:center;font-size:.7rem;color:var(--mut)}
+.steps+.lbl b{color:var(--tx)}
+.mini{background:none;border:1px dashed var(--mut);color:var(--mut);border-radius:8px;padding:6px 10px;font:inherit;font-size:.8rem;margin-top:10px;cursor:pointer}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
+nav button{flex:1;min-height:60px;background:none;border:0;color:var(--mut);font:inherit;font-size:.78rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+nav button span{font-size:1.4rem;line-height:1}
+nav button.on{color:var(--pri);font-weight:800;box-shadow:inset 0 3px 0 var(--sun)}
+.files{font-size:.9rem;color:var(--mut)}
+</style>
+</head>
+<body>
+<header class="bar"><span class="logo">BF</span><b id="brand"></b></header>
+<main id="app"></main>
+<nav aria-label="Navigation principale">
+<button data-v="home" onclick="go('home')"><span>🏠</span>Accueil</button>
+<button data-v="services" onclick="go('services')"><span>🗂️</span>Services</button>
+<button data-v="track" onclick="go('track')"><span>🧾</span>Mes demandes</button>
+<button data-v="contact" onclick="go('contact')"><span>💬</span>Contact</button>
+</nav>
+<script>
+const SUPABASE_URL="https://deabjnfqhfpkfzqmqewq.supabase.co";
+const SUPABASE_KEY="sb_publishable_feTWdmCN5ugqN-vV0hqGRA_F6bndEvn";
+/* Valeurs par défaut : remplacées par la table « settings » de Supabase */
+let C={name:"BureauFacile RDC",slogan:"Vos services bureautiques et informatiques, simplement.",whatsapp:"243000000000",phone:"+243000000000",address:"Adresse à renseigner",hours:"Lundi à samedi, 8h à 18h",notice:"Prix indicatif — peut varier selon le travail demandé"};
+const ST=["Reçue","En traitement","Prête","Livrée"],CODE=["recue","en_traitement","prete","livree"];
+const OK=["application/pdf","image/jpeg","image/png","image/webp","image/heic","application/msword","application/vnd.openxmlformats-officedocument.wordprocessingml.document","application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet","application/vnd.ms-powerpoint","application/vnd.openxmlformats-officedocument.presentationml.presentation","text/plain"];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const clean=n=>n.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Za-z0-9._-]+/g,"_").slice(-80);
+const intl=t=>{let d=String(t).replace(/\D/g,"");if(d.startsWith("0"))d="243"+d.slice(1);return d};
+const wa=(m,n)=>"https://wa.me/"+(n||C.whatsapp.replace(/\D/g,""))+"?text="+encodeURIComponent(m);
+/* ---- Accès au serveur Supabase ---- */
+async function api(path,o={}){
+ const h=Object.assign({apikey:SUPABASE_KEY},o.tok?{Authorization:"Bearer "+o.tok}:{},o.headers||{});
+ const r=await fetch(SUPABASE_URL+path,{method:o.method||"GET",headers:h,body:o.body});
+ const t=await r.text();let j=null;try{j=t?JSON.parse(t):null}catch(e){}
+ if(!r.ok)throw new Error((j&&(j.message||j.msg||j.error_description||j.error))||("Erreur "+r.status));
+ return j;
+}
+const rpc=(fn,a,tok)=>api("/rest/v1/rpc/"+fn,{method:"POST",tok,headers:{"Content-Type":"application/json"},body:JSON.stringify(a)});
+/* ---- État ---- */
+let S=[],view="home",cur=0,last=null,SES=null,af="all",ADM=[],loading=true,loadErr="",busy=false;
+try{SES=JSON.parse(sessionStorage.getItem("bf_ses")||"null")}catch(e){}
+const MY=()=>{try{return JSON.parse(localStorage.getItem("bf_my")||"[]")}catch(e){return[]}};
+const saveMY=a=>{try{localStorage.setItem("bf_my",JSON.stringify(a))}catch(e){}};
+const price=s=>s.p||"Sur devis";
+const svc=id=>S.find(x=>x.id===id)||{i:"📄",n:"Service",p:null};
+const tabOf={home:"home",services:"services",detail:"services",form:"services",done:"track",track:"track",contact:"contact",admin:"contact"};
+async function boot(){
+ try{
+  const [sv,st]=await Promise.all([api("/rest/v1/services?select=*&order=sort_order"),api("/rest/v1/settings?select=*&id=eq.1")]);
+  S=sv.map(s=>({id:s.id,i:s.icon||"📄",n:s.name,p:s.price,x:s.price_extra,t:s.delay||"",d:s.description||""}));
+  const o=st[0];if(o)C={name:o.business_name||C.name,slogan:o.slogan||C.slogan,whatsapp:o.whatsapp||C.whatsapp,phone:o.phone||C.phone,address:o.address||C.address,hours:o.hours||C.hours,notice:o.price_notice||C.notice};
+ }catch(e){loadErr="Impossible de charger les services. Vérifiez votre connexion."}
+ loading=false;$("#brand").textContent=C.name;document.title=C.name;render();
+}
+function go(v,id){view=v;if(id!==undefined)cur=id;render();window.scrollTo(0,0)}
+function render(){
+ $("#app").innerHTML=({home,services,detail,form,done,track,contact,admin})[view]();
+ document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===tabOf[view]));
+ if(view==="track")loadMy();
+ if(view==="admin"&&SES)loadAdmin();
+}
+/* ---- Écrans clients ---- */
+const row=s=>`<button class="row" onclick="go('detail',${s.id})"><span class="ic">${s.i}</span><span class="tx">${esc(s.n)}<span class="pr${s.p?"":" dv"}">${esc(price(s))}</span></span><span class="go">Détails ›</span></button>`;
+function home(){
+ if(loading)return `<p class="mut" style="margin-top:40px">Chargement…</p>`;
+ return `<section class="hero"><h1>${esc(C.name)}</h1><p>${esc(C.slogan)}</p>
+ <button class="btn y" onclick="go('form',0)">Faire une demande</button>
+ <a class="btn g" href="${wa("Bonjour "+C.name+", j’ai une question.")}" target="_blank" rel="noopener">💬 WhatsApp</a>
+ <button class="btn o" onclick="go('services')">Voir tous les services</button></section>
+ ${loadErr?`<p class="warn" style="margin-top:16px">${loadErr} <button class="mini" onclick="location.reload()">Réessayer</button></p>`:""}
+ <h2>Services les plus demandés</h2><div class="list">${S.filter(s=>[5,6,2,4,7,9].includes(s.id)).map(row).join("")}</div>
+ <p class="mut" style="margin-top:12px"><small>${esc(C.notice)}.</small></p>`;
+}
+function services(){
+ return `<h1>Nos services</h1><p class="warn"><b>Prix provisoires.</b> ${esc(C.notice)}. Nous confirmons le prix final par WhatsApp ou par téléphone.</p><div class="list" style="margin-top:12px">${S.map(row).join("")}</div>`;
+}
+function detail(){
+ const s=svc(cur);
+ return `<button class="back" onclick="go('services')">‹ Retour aux services</button>
+ <div class="big">${s.i}</div><h1>${esc(s.n)}</h1>
+ <p><span class="badge${s.p?"":" dv"}">${s.p?"Prix indicatif : "+esc(s.p):"Sur devis"}</span></p>${s.x?`<p><b>${esc(s.x)}</b></p>`:""}
+ <p>${esc(s.d)}</p><p class="mut">Délai habituel : ${esc(s.t)}</p>
+ <p class="mut">${s.p?esc(C.notice)+" (prix provisoire).":"Ce service n’a pas de prix fixe : demandez un devis gratuit."}</p>
+ <button class="btn w" onclick="go('form',${s.id})">${s.p?"Faire une demande":"Demander un devis"}</button>
+ <a class="btn o w" href="${wa("Bonjour, j’ai une question sur : "+s.n)}" target="_blank" rel="noopener">💬 Poser une question</a>`;
+}
+function form(){
+ return `<button class="back" onclick="go('${cur?"detail":"services"}')">‹ Retour</button><h1>Votre demande</h1>
+ <label for="fs">Service choisi</label>
+ <select id="fs"><option value="0">Choisir un service</option>${S.map(s=>`<option value="${s.id}"${s.id===cur?" selected":""}>${esc(s.n)}</option>`).join("")}</select>
+ <label for="fn">Nom complet</label><input id="fn" autocomplete="name">
+ <label for="ft">Numéro de téléphone (obligatoire)</label><input id="ft" type="tel" autocomplete="tel" placeholder="+243 ...">
+ <label for="fd">Description de la demande</label><textarea id="fd" placeholder="Ex. : 12 pages à imprimer en couleur, recto verso"></textarea>
+ <label for="fp">Nombre de pages (si nécessaire)</label><input id="fp" type="number" inputmode="numeric" min="1" placeholder="Ex. : 12">
+ <label for="ff">Joindre un fichier (facultatif)</label><input id="ff" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt">
+ <p class="mut"><small>5 fichiers maximum, 10 Mo chacun.</small></p>
+ <div class="err" id="err" role="alert"></div>
+ <button class="btn w" id="sb" onclick="send()">Envoyer la demande</button>`;
+}
+async function send(){
+ if(busy)return;
+ const g=i=>$("#"+i).value.trim(),sid=+$("#fs").value,n=g("fn"),t=g("ft"),d=g("fd"),pg=g("fp"),err=m=>{$("#err").textContent=m};
+ if(!sid||n.length<2||d.length<3)return err("Choisissez un service, puis remplissez votre nom et la description.");
+ if(t.replace(/\D/g,"").length<8)return err("Le numéro de téléphone est obligatoire pour que nous puissions vous contacter.");
+ const files=[...$("#ff").files];
+ if(files.length>5)return err("5 fichiers maximum.");
+ for(const f of files){if(f.size>10485760)return err(f.name+" dépasse 10 Mo.");if(!OK.includes(f.type))return err(f.name+" : ce type de fichier n’est pas accepté.")}
+ busy=true;const b=$("#sb");b.disabled=true;b.textContent="Envoi en cours…";err("");
+ try{
+  const r=(await rpc("create_request",{p_name:n,p_phone:t,p_service_id:sid,p_description:d,p_pages:pg?+pg:null}))[0],failed=[];
+  for(const f of files){
+   try{
+    const path=r.new_id+"/"+Date.now()+"_"+clean(f.name);
+    await api("/storage/v1/object/client-files/"+path,{method:"POST",headers:{"Content-Type":f.type},body:f});
+    await rpc("register_file",{p_request_id:r.new_id,p_file_name:f.name,p_storage_path:path,p_size_bytes:f.size});
+   }catch(e){failed.push(f.name)}
+  }
+  const rec={no:r.new_order_number,phone:t,name:n,sid,date:new Date().toLocaleDateString("fr-FR")};
+  saveMY([rec,...MY()]);last={...rec,failed,nfiles:files.length};busy=false;go("done");
+ }catch(e){busy=false;b.disabled=false;b.textContent="Envoyer la demande";err("Échec de l’envoi : "+e.message)}
+}
+function done(){
+ const r=last;if(!r)return track();
+ const s=svc(r.sid),m="Bonjour "+C.name+", ma demande "+r.no+" : "+s.n+". Nom : "+r.name+". Pouvez-vous me confirmer le prix et le paiement ?";
+ return `<h1>Votre demande a bien été reçue</h1><p class="mut">Votre numéro de commande est <b>${esc(r.no)}</b>. Gardez-le pour suivre votre demande.</p>
+ <div class="ticket"><div class="hd"><span class="no">${esc(r.no)}</span><span class="stamp">Reçue</span></div><h3>${s.i} ${esc(s.n)}</h3><p class="mut">${esc(r.name)}, le ${esc(r.date)}${r.nfiles?"<br>📎 "+(r.nfiles-r.failed.length)+" fichier(s) envoyé(s)":""}</p></div>
+ ${r.failed.length?`<p class="warn">Ces fichiers n’ont pas pu être envoyés : ${r.failed.map(esc).join(", ")}. Envoyez-les-nous par WhatsApp.</p>`:""}
+ <a class="btn g w" href="${wa(m)}" target="_blank" rel="noopener">💬 Confirmer le prix sur WhatsApp</a>
+ <a class="btn o w" href="tel:${esc(C.phone)}">📞 Appeler</a>
+ <button class="btn w" onclick="go('track')">Suivre ma demande</button>`;
+}
+const steps=st=>`<div class="steps">${ST.map((x,k)=>`<i class="${k<=st?"on":""}"></i>`).join("")}</div><div class="lbl">${ST.map((x,k)=>k===st?`<b>${x}</b>`:`<span>${x}</span>`).join("")}</div>`;
+function track(){
+ return `<h1>Mes demandes</h1><p class="mut">Suivez l’évolution de vos demandes.</p>
+ ${MY().length?`<div id="mylist"><p class="mut">Chargement…</p></div>`:`<p class="mut">Aucune demande enregistrée sur ce téléphone.</p>`}
+ <h2>Retrouver une demande</h2>
+ <label for="tn">Numéro de commande</label><input id="tn" placeholder="BF-0001" autocapitalize="characters">
+ <label for="tp">Téléphone utilisé pour la demande</label><input id="tp" type="tel">
+ <div class="err" id="terr" role="alert"></div><button class="btn w" onclick="findReq()">Rechercher</button>`;
+}
+async function loadMy(){
+ const box=$("#mylist");if(!box)return;
+ const out=await Promise.all(MY().map(async m=>{try{return {m,r:(await rpc("track_request",{p_order_number:m.no,p_phone:m.phone}))[0]}}catch(e){return {m,r:null}}}));
+ const b2=$("#mylist");if(!b2)return;
+ b2.innerHTML=out.map(({m,r})=>{const st=r?CODE.indexOf(r.status):-1;return `<div class="ticket"><div class="hd"><span class="no">${esc(m.no)}</span><span class="stamp">${st>=0?ST[st]:"?"}</span></div><h3>${esc(r?r.service_name:svc(m.sid).n)}</h3><p class="mut">${esc(m.date)}</p>${st>=0?steps(st):`<p class="mut">Statut indisponible pour le moment.</p>`}</div>`}).join("");
+}
+async function findReq(){
+ const n=$("#tn").value.trim().toUpperCase(),p=$("#tp").value.trim(),e=$("#terr");
+ if(!/^BF-\d+$/.test(n)||p.replace(/\D/g,"").length<8){e.textContent="Entrez un numéro valide (ex. BF-0001) et le téléphone utilisé.";return}
+ try{
+  const r=await rpc("track_request",{p_order_number:n,p_phone:p});
+  if(!r.length){e.textContent="Aucune demande trouvée avec ces informations.";return}
+  const L=MY();if(!L.some(x=>x.no===n))saveMY([{no:n,phone:p,name:"",sid:0,date:new Date(r[0].created_at).toLocaleDateString("fr-FR")},...L]);
+  render();
+ }catch(x){e.textContent="Recherche impossible : "+x.message}
+}
+function contact(){
+ return `<h1>Nous contacter</h1><p class="mut">Pour confirmer un prix, poser une question ou payer, parlez directement à notre équipe.</p>
+ <a class="btn g w" href="${wa("Bonjour "+C.name+", j’aimerais des informations.")}" target="_blank" rel="noopener">💬 Écrire sur WhatsApp</a>
+ <a class="btn w" href="tel:${esc(C.phone)}">📞 Appeler maintenant</a>
+ <h2>Horaires</h2><p>${esc(C.hours)}</p><h2>Adresse</h2><p>${esc(C.address)}</p>
+ <p style="margin-top:32px"><button class="mini" onclick="go('admin')">Espace administration</button></p>`;
+}
+/* ---- Espace administration ---- */
+function admin(){
+ if(!SES)return `<button class="back" onclick="go('contact')">‹ Retour</button><h1>Administration</h1>
+ <label for="ae">E-mail</label><input id="ae" type="email" autocomplete="username">
+ <label for="ap">Mot de passe</label><input id="ap" type="password" autocomplete="current-password">
+ <div class="err" id="aerr" role="alert"></div><button class="btn w" onclick="login()">Se connecter</button>`;
+ return `<h1>Administration</h1><div id="adm"><p class="mut">Chargement…</p></div>`;
+}
+async function login(){
+ const e=$("#ae").value.trim(),p=$("#ap").value,er=$("#aerr");
+ try{
+  const s=await api("/auth/v1/token?grant_type=password",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:e,password:p})});
+  if((await rpc("is_admin",{},s.access_token))!==true){er.textContent="Ce compte n’est pas administrateur.";return}
+  SES={tok:s.access_token};try{sessionStorage.setItem("bf_ses",JSON.stringify(SES))}catch(x){}
+  render();
+ }catch(x){er.textContent="Connexion refusée : "+x.message}
+}
+function logout(){SES=null;ADM=[];try{sessionStorage.removeItem("bf_ses")}catch(e){}go("home")}
+async function loadAdmin(){
+ try{ADM=await api("/rest/v1/requests?select=*,services(name,icon),request_files(*)&order=created_at.desc",{tok:SES.tok});drawAdmin()}
+ catch(e){if(/JWT|expired|401/i.test(e.message)){logout();return}const b=$("#adm");if(b)b.innerHTML=`<p class="warn">${esc(e.message)}</p>`}
+}
+function drawAdmin(){
+ const box=$("#adm");if(!box)return;
+ const g=r=>r.status==="recue"?"0":r.status==="en_traitement"?"1":"2",cnt=k=>ADM.filter(r=>g(r)===k).length;
+ const tabs=[["all","Toutes",ADM.length],["0","En attente",cnt("0")],["1","En traitement",cnt("1")],["2","Terminées",cnt("2")]];
+ const L=ADM.filter(r=>af==="all"||g(r)===af);
+ box.innerHTML=`<p><button class="mini" onclick="logout()">Se déconnecter</button> <button class="mini" onclick="loadAdmin()">Actualiser</button></p>
+ <div class="tabs">${tabs.map(([k,n,v])=>`<button class="${af===k?"on":""}" onclick="af='${k}';drawAdmin()">${n} (${v})</button>`).join("")}</div>
+ ${L.length?L.map(adminCard).join(""):`<p class="mut">Aucune demande dans cette catégorie.</p>`}`;
+}
+function adminCard(r){
+ const sv=r.services||{},st=CODE.indexOf(r.status),m="Bonjour "+r.client_name+", ici "+C.name+" au sujet de votre demande "+r.order_number+".";
+ return `<div class="ticket"><div class="hd"><span class="no">${esc(r.order_number)}</span><span class="stamp">${ST[st]}</span></div>
+ <h3>${sv.icon||""} ${esc(sv.name)}</h3>
+ <p class="mut">${esc(r.client_name)}, ${esc(r.client_phone)}<br>${new Date(r.created_at).toLocaleString("fr-FR")}${r.pages?", "+r.pages+" pages":""}</p>
+ <p>${esc(r.description)}</p>
+ ${(r.request_files||[]).map(f=>`<button class="btn o w" onclick="dl('${f.id}')">⬇️ ${esc(f.file_name)}</button>`).join("")}
+ <label for="s${r.id}">Statut</label><select id="s${r.id}" onchange="setSt('${r.id}',this.value)">${CODE.map((c,k)=>`<option value="${c}"${k===st?" selected":""}>${ST[k]}</option>`).join("")}</select>
+ <a class="btn g w" href="${wa(m,intl(r.client_phone))}" target="_blank" rel="noopener">💬 Contacter le client</a>
+ <a class="btn o w" href="tel:${esc(r.client_phone)}">📞 Appeler</a></div>`;
+}
+async function dl(id){
+ const f=ADM.flatMap(r=>r.request_files||[]).find(x=>x.id===id);if(!f)return;
+ try{
+  const s=await api("/storage/v1/object/sign/client-files/"+f.storage_path,{method:"POST",tok:SES.tok,headers:{"Content-Type":"application/json"},body:JSON.stringify({expiresIn:300})});
+  const a=document.createElement("a");a.href=SUPABASE_URL+"/storage/v1"+s.signedURL+"&download="+encodeURIComponent(f.file_name);document.body.appendChild(a);a.click();a.remove();
+ }catch(e){alert("Téléchargement impossible : "+e.message)}
+}
+async function setSt(id,code){
+ try{
+  await api("/rest/v1/requests?id=eq."+id,{method:"PATCH",tok:SES.tok,headers:{"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify({status:code})});
+  const r=ADM.find(x=>x.id===id);if(r)r.status=code;drawAdmin();
+ }catch(e){alert("Modification impossible : "+e.message)}
+}
+if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+render();boot();
+</script>
+</body>
+</html>
