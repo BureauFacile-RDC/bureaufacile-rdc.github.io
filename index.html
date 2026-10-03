@@ -105,7 +105,7 @@ async function api(path,o={}){
 }
 const rpc=(fn,a,tok)=>api("/rest/v1/rpc/"+fn,{method:"POST",tok,headers:{"Content-Type":"application/json"},body:JSON.stringify(a)});
 /* ---- État ---- */
-let ASV=[],atab="req",edit=null,S=[],view="home",cur=0,last=null,SES=null,af="all",ADM=[],loading=true,loadErr="",busy=false;
+let ASV=[],ASET=null,atab="req",edit=null,S=[],view="home",cur=0,last=null,SES=null,af="all",ADM=[],loading=true,loadErr="",busy=false;
 try{SES=JSON.parse(sessionStorage.getItem("bf_ses")||"null")}catch(e){}
 const MY=()=>{try{return JSON.parse(localStorage.getItem("bf_my")||"[]")}catch(e){return[]}};
 const saveMY=a=>{try{localStorage.setItem("bf_my",JSON.stringify(a))}catch(e){}};
@@ -248,13 +248,14 @@ async function login(){
 }
 function logout(){SES=null;ADM=[];try{sessionStorage.removeItem("bf_ses")}catch(e){}go("home")}
 async function loadAdmin(){
- try{[ADM,ASV]=await Promise.all([api("/rest/v1/requests?select=*,services(name,icon),request_files(*)&order=created_at.desc",{tok:SES.tok}),api("/rest/v1/services?select=*&order=sort_order",{tok:SES.tok})]);drawAdmin()}
+ try{[ADM,ASV,ASET]=await Promise.all([api("/rest/v1/requests?select=*,services(name,icon),request_files(*)&order=created_at.desc",{tok:SES.tok}),api("/rest/v1/services?select=*&order=sort_order",{tok:SES.tok}),api("/rest/v1/settings?select=*&id=eq.1",{tok:SES.tok}).then(r=>r[0]||null)]);drawAdmin()}
  catch(e){if(/JWT|expired|401/i.test(e.message)){logout();return}const b=$("#adm");if(b)b.innerHTML=`<p class="warn">${esc(e.message)}</p>`}
 }
 function drawAdmin(){
  const box=$("#adm");if(!box)return;
- const top=`<div class="tabs">${[["req","Demandes"],["svc","Services"]].map(([k,n])=>`<button class="${atab===k?"on":""}" onclick="atab='${k}';edit=null;drawAdmin()">${n}</button>`).join("")}</div>`;
+ const top=`<div class="tabs">${[["req","Demandes"],["svc","Services"],["set","Coordonnées"]].map(([k,n])=>`<button class="${atab===k?"on":""}" onclick="atab='${k}';edit=null;drawAdmin()">${n}</button>`).join("")}</div>`;
  if(atab==="svc"){box.innerHTML=`<p><button class="mini" onclick="logout()">Se déconnecter</button> <button class="mini" onclick="loadAdmin()">Actualiser</button></p>`+top+svcPanel();return}
+ if(atab==="set"){box.innerHTML=`<p><button class="mini" onclick="logout()">Se déconnecter</button> <button class="mini" onclick="loadAdmin()">Actualiser</button></p>`+top+setPanel();return}
  const g=r=>r.status==="recue"?"0":r.status==="en_traitement"?"1":"2",cnt=k=>ADM.filter(r=>g(r)===k).length;
  const tabs=[["all","Toutes",ADM.length],["0","En attente",cnt("0")],["1","En traitement",cnt("1")],["2","Terminées",cnt("2")]];
  const L=ADM.filter(r=>af==="all"||g(r)===af);
@@ -335,6 +336,34 @@ async function toggleSvc(id){
  const s=ASV.find(x=>x.id===id);if(!s)return;
  try{await patch("/rest/v1/services?id=eq."+id,{active:!s.active});s.active=!s.active;drawAdmin();refreshPublic()}
  catch(e){alert("Modification impossible : "+e.message)}
+}
+/* ---- Coordonnées de l'entreprise (administration) ---- */
+function setPanel(){
+ const o=ASET||{business_name:C.name,slogan:C.slogan,whatsapp:C.whatsapp,phone:C.phone,address:C.address,hours:C.hours,price_notice:C.notice};
+ return `<h2>Coordonnées de l’entreprise</h2>
+ <p class="mut">Ces informations s’affichent dans l’application des clients.</p>
+ <label for="cn">Nom de l’entreprise</label><input id="cn" value="${esc(o.business_name)}">
+ <label for="cs">Slogan</label><input id="cs" value="${esc(o.slogan)}">
+ <label for="cw">Numéro WhatsApp (chiffres, avec l’indicatif)</label><input id="cw" type="tel" value="${esc(o.whatsapp)}" placeholder="243812345678">
+ <label for="cp">Téléphone</label><input id="cp" type="tel" value="${esc(o.phone)}" placeholder="+243 81 234 56 78">
+ <label for="ca">Adresse</label><input id="ca" value="${esc(o.address)}">
+ <label for="ch">Horaires d’ouverture</label><input id="ch" value="${esc(o.hours)}">
+ <label for="cm">Message sur les prix</label><input id="cm" value="${esc(o.price_notice)}">
+ <div class="err" id="cerr" role="alert"></div>
+ <button class="btn w" onclick="saveSet()">Enregistrer</button>`;
+}
+async function saveSet(){
+ const v=i=>$("#"+i).value.trim(),er=$("#cerr");
+ const o={business_name:v("cn"),slogan:v("cs"),whatsapp:v("cw").replace(/\D/g,""),phone:v("cp"),address:v("ca"),hours:v("ch"),price_notice:v("cm")};
+ if(o.business_name.length<2){er.textContent="Le nom de l’entreprise est obligatoire.";return}
+ if(o.whatsapp.length<8){er.textContent="Le numéro WhatsApp doit contenir au moins 8 chiffres.";return}
+ if(o.phone.replace(/\D/g,"").length<8){er.textContent="Le téléphone doit contenir au moins 8 chiffres.";return}
+ try{
+  const r=await patch("/rest/v1/settings?id=eq.1",o);ASET=r[0];
+  C={name:o.business_name,slogan:o.slogan||C.slogan,whatsapp:o.whatsapp,phone:o.phone,address:o.address,hours:o.hours,notice:o.price_notice||C.notice};
+  $("#brand").textContent=C.name;document.title=C.name;
+  er.textContent="";alert("Coordonnées enregistrées.");drawAdmin();
+ }catch(e){er.textContent="Enregistrement impossible : "+e.message}
 }
 if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 render();boot();
