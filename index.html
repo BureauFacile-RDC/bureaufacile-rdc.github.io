@@ -111,7 +111,7 @@ const MY=()=>{try{return JSON.parse(localStorage.getItem("bf_my")||"[]")}catch(e
 const saveMY=a=>{try{localStorage.setItem("bf_my",JSON.stringify(a))}catch(e){}};
 const price=s=>s.p||"Sur devis";
 const svc=id=>S.find(x=>x.id===id)||{i:"📄",n:"Service",p:null};
-const tabOf={home:"home",services:"services",detail:"services",form:"services",done:"track",track:"track",contact:"contact",admin:"contact"};
+const tabOf={home:"home",services:"services",detail:"services",form:"services",done:"track",track:"track",contact:"contact",admin:"contact",privacy:"contact"};
 async function boot(){
  try{
   const [sv,st]=await Promise.all([api("/rest/v1/services?select=*&order=sort_order"),api("/rest/v1/settings?select=*&id=eq.1")]);
@@ -122,7 +122,7 @@ async function boot(){
 }
 function go(v,id){view=v;if(id!==undefined)cur=id;render();window.scrollTo(0,0)}
 function render(){
- $("#app").innerHTML=({home,services,detail,form,done,track,contact,admin})[view]();
+ $("#app").innerHTML=({home,services,detail,form,done,track,contact,admin,privacy})[view]();
  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===tabOf[view]));
  if(view==="track")loadMy();
  if(view==="admin"&&SES)loadAdmin();
@@ -163,6 +163,7 @@ function form(){
  <label for="ff">Joindre un fichier (facultatif)</label><input id="ff" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt">
  <p class="mut"><small>5 fichiers maximum, 10 Mo chacun.</small></p>
  <div class="err" id="err" role="alert"></div>
+ <p class="mut"><small>🔒 Vos données servent uniquement à traiter votre demande. <a href="#" onclick="go('privacy');return false" style="color:inherit;text-decoration:underline">Voir la confidentialité</a></small></p>
  <button class="btn w" id="sb" onclick="send()">Envoyer la demande</button>`;
 }
 async function send(){
@@ -227,7 +228,16 @@ function contact(){
  <a class="btn g w" href="${wa("Bonjour "+C.name+", j’aimerais des informations.")}" target="_blank" rel="noopener">💬 Écrire sur WhatsApp</a>
  <a class="btn w" href="tel:${esc(C.phone)}">📞 Appeler maintenant</a>
  <h2>Horaires</h2><p>${esc(C.hours)}</p><h2>Adresse</h2><p>${esc(C.address)}</p>
- <p style="margin-top:32px"><button class="mini" onclick="go('admin')">Espace administration</button></p>`;
+ <p style="margin-top:24px"><button class="mini" onclick="go('privacy')">Confidentialité</button></p>
+ <p style="margin-top:12px"><button class="mini" onclick="go('admin')">Espace administration</button></p>`;
+}
+function privacy(){
+ return `<button class="back" onclick="go('contact')">‹ Retour</button><h1>Vos données</h1>
+ <p>Quand vous envoyez une demande, nous recevons votre nom, votre numéro de téléphone, les détails de la demande et les documents que vous joignez. Nous les utilisons uniquement pour traiter votre demande et vous contacter.</p>
+ <p>Pour limiter les abus, nous enregistrons aussi votre adresse IP. Elle est effacée automatiquement après 30 jours.</p>
+ <p>Vos documents ne sont visibles que par notre équipe.</p>
+ <p>Pour faire supprimer vos données, contactez-nous sur WhatsApp.</p>
+ <a class="btn g w" href="${wa("Bonjour "+C.name+", je souhaite faire supprimer mes données.")}" target="_blank" rel="noopener">💬 Demander la suppression</a>`;
 }
 /* ---- Espace administration ---- */
 function admin(){
