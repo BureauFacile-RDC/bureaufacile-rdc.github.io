@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>BureauFacile RDC</title>
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#1646c7">
-<link rel="icon" href="icon-512.png">
-<link rel="apple-touch-icon" href="icon-512.png">
+<meta name="theme-color" content="#0d47a1">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-maskable-512.png">
 <style>
-:root{--bg:#eef1f6;--card:#fff;--tx:#0e1b3d;--mut:#55607a;--pri:#1646c7;--on:#fff;--sun:#ffc928;--red:#d6362b;--ok:#17803f;--line:#d9dfeb;
+:root{--bg:#f2f6fc;--card:#fff;--tx:#172033;--mut:#55607a;--pri:#1976d2;--deep:#0d47a1;--cy:#00bcd4;--on:#fff;--sun:#a8ecf5;--red:#d6362b;--ok:#17803f;--line:#d9e2f0;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1226;--card:#141d38;--tx:#eef1fa;--mut:#9ca8c6;--pri:#7aa2ff;--on:#08122c;--line:#26335a;--ok:#4cc77f}}
-:root[data-theme="dark"]{--bg:#0b1226;--card:#141d38;--tx:#eef1fa;--mut:#9ca8c6;--pri:#7aa2ff;--on:#08122c;--line:#26335a;--ok:#4cc77f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a1730;--card:#10213f;--tx:#eef3fb;--mut:#9fb0cc;--pri:#64b5f6;--on:#06182e;--sun:#1b5f73;--line:#223a63;--ok:#4cc77f}}
+:root[data-theme="dark"]{--bg:#0a1730;--card:#10213f;--tx:#eef3fb;--mut:#9fb0cc;--pri:#64b5f6;--on:#06182e;--sun:#1b5f73;--line:#223a63;--ok:#4cc77f}
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
@@ -20,16 +20,13 @@ body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-appl
 h1,h2,h3{line-height:1.15;margin:0 0 8px;letter-spacing:-.01em}
 h1{font-size:2rem;font-weight:800}h2{font-size:1.35rem;font-weight:750;margin-top:24px}h3{font-size:1.1rem}
 p{margin:0 0 12px}.mut{color:var(--mut)}small{color:var(--mut)}
-.hero{background:var(--pri);color:var(--on);border-radius:20px;padding:22px 20px;margin-top:8px}
-.hero p{opacity:.92}
-.hero .btn{display:flex;width:100%;margin-top:10px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:48px;padding:0 18px;border-radius:12px;border:2px solid transparent;font:inherit;font-weight:700;text-decoration:none;cursor:pointer;background:var(--pri);color:var(--on)}
-.btn.y{background:var(--sun);color:#0e1b3d}
+.btn.y{background:var(--sun);color:var(--tx)}
 .btn.o{background:transparent;border-color:currentColor;color:inherit}
 .btn.w{width:100%;margin-top:8px}
 .btn.g{background:#1fa855;color:#fff}
-.hero .btn.o{color:var(--on)}
-.btn:focus-visible,.row:focus-visible,nav button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.btn:focus-visible,.row:focus-visible,nav button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--cy);outline-offset:2px}
 .list{background:var(--card);border-radius:16px;border:1px solid var(--line);overflow:hidden}
 .row{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;background:none;border:0;border-bottom:1px solid var(--line);text-align:left;font:inherit;color:inherit;cursor:pointer;min-height:60px}
 .row:last-child{border-bottom:0}
@@ -38,16 +35,47 @@ p{margin:0 0 12px}.mut{color:var(--mut)}small{color:var(--mut)}
 .row .pr{display:block;font-size:.85rem;font-weight:600;color:var(--pri);margin-top:2px}
 .go{font-size:.8rem;font-weight:700;color:var(--pri);border:1.5px solid var(--pri);border-radius:999px;padding:5px 10px;white-space:nowrap}
 .row .pr.dv{color:var(--red)}
-.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:4;display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--card);border-bottom:1px solid var(--line);font-size:1.05rem}
-.logo{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:var(--sun);color:#0e1b3d;font-weight:900;font-size:.9rem}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:4;display:flex;align-items:center;gap:12px;padding:10px 16px;background:linear-gradient(135deg,#0d47a1,#1565c0);color:#fff}
+.bar .lg{width:44px;height:44px;flex:none;border-radius:12px}
+.bar .bt{flex:1;min-width:0;line-height:1.2}
+.bar .bt b{display:block;font-size:1.1rem;font-weight:800}
+.bar .bt small{display:block;color:#d6e8ff;font-size:.74rem;margin-top:1px}
+.bar .mb{flex:none;width:44px;height:44px;display:grid;place-items:center;border-radius:12px;border:1.5px solid rgba(255,255,255,.4);background:transparent;color:#fff;cursor:pointer}
+.bar .mb svg{width:24px;height:24px}
+.menu{display:none;position:absolute;right:12px;top:calc(100% + 6px);min-width:220px;background:var(--card);color:var(--tx);border:1px solid var(--line);border-radius:14px;padding:6px;box-shadow:0 8px 24px rgba(8,30,70,.25)}
+.menu.open{display:block}
+.menu button{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;padding:0 12px;border:0;border-radius:10px;background:none;color:inherit;font:inherit;font-weight:650;text-align:left;cursor:pointer}
+.menu button:hover,.menu button:focus-visible{background:var(--bg)}
+.banner{margin-top:14px;padding:14px 12px 12px;border-radius:16px;background:linear-gradient(90deg,#1976d2,#00838f);color:#fff;text-align:center}
+.banner b{font-size:1.05rem;font-weight:800}
+.banner i{display:block;width:72px;height:3px;margin:8px auto 0;border-radius:2px;background:#7fe9f7}
+.acts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.act{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:104px;padding:10px 6px;border-radius:16px;border:0;color:#fff;font:inherit;font-weight:700;font-size:.82rem;line-height:1.15;text-align:center;text-decoration:none;cursor:pointer;overflow-wrap:anywhere}
+.act svg{width:30px;height:30px;flex:none}
+.act small{color:#fff;opacity:.92;font-size:.66rem;font-weight:600}
+.act.a1{background:linear-gradient(135deg,#1976d2,#0d47a1)}
+.act.a2{background:#1a8f4a}
+.act.a3{background:linear-gradient(135deg,#00838f,#1976d2)}
+#splash{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center;color:#fff;background:radial-gradient(120% 80% at 50% 28%,#1565c0 0%,#0d47a1 55%,#08306b 100%);transition:opacity .3s ease}
+#splash.out{opacity:0;pointer-events:none}
+#splash .lg{width:116px;height:116px;border-radius:28px;box-shadow:0 0 56px rgba(0,188,212,.38)}
+#splash .nm{font-size:1.9rem;font-weight:800;letter-spacing:-.01em;margin-top:8px}
+#splash .nm span{color:#00bcd4}
+#splash .sl{max-width:300px;font-size:.98rem;color:#d6e8ff}
+#splash .ld{width:120px;height:4px;margin-top:14px;border-radius:2px;background:rgba(255,255,255,.2);overflow:hidden}
+#splash .ld i{display:block;width:40%;height:100%;border-radius:2px;background:#00bcd4;animation:ld 1.1s ease-in-out infinite}
+#splash .ms{min-height:1.3em;font-size:.85rem;color:#d6e8ff}
+#splash [hidden]{display:none}
+@keyframes ld{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
+@media (prefers-reduced-motion:reduce){#splash{transition:none}#splash .ld i{animation:none;width:100%}}
 .link{background:none;border:0;color:var(--pri);font:inherit;font-weight:700;padding:12px 0;cursor:pointer}
 .note{margin-top:16px;padding:12px 14px;border-radius:12px;border:1px dashed var(--mut);color:var(--mut);font-size:.9rem}
-.warn{padding:10px 12px;border-radius:12px;background:var(--sun);color:#0e1b3d;font-size:.9rem}
+.warn{padding:10px 12px;border-radius:12px;background:var(--sun);color:var(--tx);font-size:.9rem}
 .tabs{display:flex;gap:6px;overflow-x:auto;margin:12px 0}
 .tabs button{flex:none;min-height:40px;padding:0 12px;border-radius:999px;border:1.5px solid var(--line);background:var(--card);color:var(--tx);font:inherit;font-size:.85rem;cursor:pointer}
 .tabs button.on{background:var(--pri);color:var(--on);border-color:var(--pri)}
 .fbtn{display:block;width:100%;margin-top:8px;padding:10px 14px;min-height:48px;text-align:left;white-space:normal;overflow-wrap:anywhere;word-break:break-all;line-height:1.3;border:2px solid currentColor;border-radius:12px;background:transparent;color:inherit;font:inherit;font-weight:700;cursor:pointer}
-.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-weight:700;font-size:.85rem;background:var(--sun);color:#0e1b3d}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-weight:700;font-size:.85rem;background:var(--sun);color:var(--tx)}
 .badge.dv{background:var(--red);color:#fff}
 .big{font-size:3rem;line-height:1}
 label{display:block;font-weight:650;margin:14px 0 6px}
@@ -68,14 +96,54 @@ textarea{min-height:110px;resize:vertical}
 .steps+.lbl b{color:var(--tx)}
 .mini{background:none;border:1px dashed var(--mut);color:var(--mut);border-radius:8px;padding:6px 10px;font:inherit;font-size:.8rem;margin-top:10px;cursor:pointer}
 nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
-nav button{flex:1;min-height:60px;background:none;border:0;color:var(--mut);font:inherit;font-size:.78rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+nav button{flex:1;min-width:0;min-height:60px;padding:0 2px;background:none;border:0;color:var(--mut);font:inherit;font-size:.76rem;line-height:1.15;white-space:nowrap;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
 nav button span{font-size:1.4rem;line-height:1}
-nav button.on{color:var(--pri);font-weight:800;box-shadow:inset 0 3px 0 var(--sun)}
+nav button.on{color:var(--pri);font-weight:800;box-shadow:inset 0 3px 0 var(--cy)}
 .files{font-size:.9rem;color:var(--mut)}
 </style>
 </head>
 <body>
-<header class="bar"><span class="logo">BF</span><b id="brand"></b></header>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<linearGradient id="bfbg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1976D2"/><stop offset="1" stop-color="#0D47A1"/></linearGradient>
+<linearGradient id="bffg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4DD9EC"/><stop offset="1" stop-color="#00BCD4"/></linearGradient>
+<linearGradient id="bfsw" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#00BCD4" stop-opacity="0"/><stop offset=".4" stop-color="#00BCD4"/><stop offset="1" stop-color="#7FE9F7"/></linearGradient>
+<linearGradient id="bfbase" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E3F6FF"/><stop offset="1" stop-color="#9FDCFF"/></linearGradient>
+</defs><symbol id="bf" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="url(#bfbg)"/>
+<path d="M70 330 C 120 215, 250 168, 400 196" fill="none" stroke="url(#bfsw)" stroke-width="16" stroke-linecap="round"/>
+<g>
+ <rect x="138" y="92" width="236" height="262" rx="22" fill="none" stroke="#9FDCFF" stroke-width="12"/>
+ <path d="M168 120h118l52 52v34H168z" fill="#F2FAFF"/>
+ <path d="M286 120v34a18 18 0 0 0 18 18h34z" fill="#BFE6FF"/>
+ <rect x="188" y="136" width="84" height="9" rx="4.5" fill="#1976D2"/>
+ <rect x="188" y="156" width="64" height="9" rx="4.5" fill="#1976D2" opacity=".7"/>
+</g>
+<path d="M266.61 279.71Q266.61 296.43 254.925 306.21500000000003Q243.24 316.0 222.34 316.0H160.21V182.62H220.25Q240.58 182.62 252.075 191.93Q263.57 201.24 263.57 217.2Q263.57 228.98000000000002 257.395 236.77Q251.22000000000003 244.56 240.96 247.6Q252.55 250.07 259.58000000000004 259.095Q266.61 268.12 266.61 279.71ZM192.70000000000002 236.57999999999998H213.98000000000002Q221.96 236.57999999999998 226.235 233.065Q230.51 229.55 230.51 222.70999999999998Q230.51 215.87 226.235 212.26Q221.96 208.65 213.98000000000002 208.65H192.70000000000002ZM233.74 275.34Q233.74 268.31 229.085 264.32Q224.43 260.33 216.26 260.33H192.70000000000002V289.78H216.64Q224.81 289.78 229.275 286.075Q233.74 282.37 233.74 275.34Z" fill="#FFFFFF"/>
+<path d="M358.25 182.62V208.65H303.90999999999997V236.76999999999998H344.57V262.04H303.90999999999997V316.0H271.41999999999996V182.62Z" fill="url(#bffg)"/>
+<path d="M90 362h332a8 8 0 0 1 8 8v4a22 22 0 0 1-22 22H104a22 22 0 0 1-22-22v-4a8 8 0 0 1 8-8z" fill="url(#bfbase)"/>
+<rect x="226" y="364" width="60" height="9" rx="4.5" fill="#0D47A1" opacity=".35"/>
+</symbol></svg>
+<div id="splash" role="status" aria-live="polite">
+<svg class="lg" viewBox="0 0 512 512" aria-hidden="true"><use href="#bf"/></svg>
+<div class="nm">BureauFacile <span>RDC</span></div>
+<div class="sl">Vos services bureautiques et informatiques, simplement.</div>
+<div class="ld" aria-hidden="true"><i></i></div>
+<div class="ms" id="sp-msg"></div>
+<button class="btn o" id="sp-retry" type="button" hidden onclick="location.reload()">Recharger</button>
+</div>
+<script>setTimeout(function(){if(window.__bfOK)return;var m=document.getElementById("sp-msg"),b=document.getElementById("sp-retry");if(m)m.textContent="L’application n’a pas pu démarrer.";if(b)b.hidden=false},10000)</script>
+<header class="bar">
+<svg class="lg" viewBox="0 0 512 512" aria-hidden="true"><use href="#bf"/></svg>
+<div class="bt"><b id="brand">BureauFacile RDC</b><small id="slogan">Vos services bureautiques et informatiques, simplement.</small></div>
+<button class="mb" id="menuBtn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu" onclick="toggleMenu()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+<div class="menu" id="menu" role="menu" aria-label="Menu">
+<button type="button" role="menuitem" onclick="toggleMenu(false);go('home')">🏠 Accueil</button>
+<button type="button" role="menuitem" onclick="toggleMenu(false);go('services')">🗂️ Services</button>
+<button type="button" role="menuitem" onclick="toggleMenu(false);go('form',0)">📄 Faire une demande</button>
+<button type="button" role="menuitem" onclick="toggleMenu(false);go('track')">🧾 Mes demandes</button>
+<button type="button" role="menuitem" onclick="toggleMenu(false);go('contact')">💬 Contact</button>
+<button type="button" role="menuitem" onclick="toggleMenu(false);go('privacy')">🔒 Confidentialité</button>
+</div>
+</header>
 <main id="app"></main>
 <nav aria-label="Navigation principale">
 <button data-v="home" onclick="go('home')"><span>🏠</span>Accueil</button>
@@ -84,6 +152,7 @@ nav button.on{color:var(--pri);font-weight:800;box-shadow:inset 0 3px 0 var(--su
 <button data-v="contact" onclick="go('contact')"><span>💬</span>Contact</button>
 </nav>
 <script>
+window.__bfOK=1;
 const SUPABASE_URL="https://deabjnfqhfpkfzqmqewq.supabase.co";
 const SUPABASE_KEY="sb_publishable_feTWdmCN5ugqN-vV0hqGRA_F6bndEvn";
 /* Valeurs par défaut : remplacées par la table « settings » de Supabase */
@@ -98,27 +167,39 @@ const wa=(m,n)=>"https://wa.me/"+(n||C.whatsapp.replace(/\D/g,""))+"?text="+enco
 /* ---- Accès au serveur Supabase ---- */
 async function api(path,o={}){
  const h=Object.assign({apikey:SUPABASE_KEY},o.tok?{Authorization:"Bearer "+o.tok}:{},o.headers||{});
- const r=await fetch(SUPABASE_URL+path,{method:o.method||"GET",headers:h,body:o.body});
- const t=await r.text();let j=null;try{j=t?JSON.parse(t):null}catch(e){}
+ const ctl=o.timeout?new AbortController():null,tm=ctl?setTimeout(()=>ctl.abort(),o.timeout):0;
+ let r,t;
+ try{r=await fetch(SUPABASE_URL+path,{method:o.method||"GET",headers:h,body:o.body,signal:ctl?ctl.signal:undefined});t=await r.text()}
+ catch(e){throw e&&e.name==="AbortError"?new Error("Délai dépassé"):e}
+ finally{if(tm)clearTimeout(tm)}let j=null;try{j=t?JSON.parse(t):null}catch(e){}
  if(!r.ok)throw new Error((j&&(j.message||j.msg||j.error_description||j.error))||("Erreur "+r.status));
  return j;
 }
 const rpc=(fn,a,tok)=>api("/rest/v1/rpc/"+fn,{method:"POST",tok,headers:{"Content-Type":"application/json"},body:JSON.stringify(a)});
 /* ---- État ---- */
-let ASV=[],ASET=null,atab="req",edit=null,S=[],view="home",cur=0,last=null,SES=null,af="all",ADM=[],loading=true,loadErr="",busy=false;
+let cfgOK=false,ASV=[],ASET=null,atab="req",edit=null,S=[],view="home",cur=0,last=null,SES=null,af="all",ADM=[],loading=true,loadErr="",busy=false;
 try{SES=JSON.parse(sessionStorage.getItem("bf_ses")||"null")}catch(e){}
 const MY=()=>{try{return JSON.parse(localStorage.getItem("bf_my")||"[]")}catch(e){return[]}};
 const saveMY=a=>{try{localStorage.setItem("bf_my",JSON.stringify(a))}catch(e){}};
 const price=s=>s.p||"Sur devis";
 const svc=id=>S.find(x=>x.id===id)||{i:"📄",n:"Service",p:null};
 const tabOf={home:"home",services:"services",detail:"services",form:"services",done:"track",track:"track",contact:"contact",admin:"contact",privacy:"contact"};
+const T0=performance.now();
+const slowT=setTimeout(()=>{const m=$("#sp-msg");if(m)m.textContent="Connexion lente… merci de patienter."},6000);
+function hideSplash(){const e=$("#splash");if(!e||e.dataset.done)return;e.dataset.done="1";e.classList.add("out");e.setAttribute("aria-hidden","true");setTimeout(()=>e.remove(),350)}
+function endSplash(){clearTimeout(slowT);setTimeout(hideSplash,Math.max(0,1000-(performance.now()-T0)))}
+setTimeout(hideSplash,20000);
+function toggleMenu(f){const m=$("#menu"),b=$("#menuBtn"),o=f===undefined?!m.classList.contains("open"):f;m.classList.toggle("open",o);b.setAttribute("aria-expanded",String(o))}
+document.addEventListener("click",e=>{if(!e.target.closest("#menu,#menuBtn"))toggleMenu(false)});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")toggleMenu(false)});
 async function boot(){
  try{
-  const [sv,st]=await Promise.all([api("/rest/v1/services?select=*&order=sort_order"),api("/rest/v1/settings?select=*&id=eq.1")]);
+  const [sv,st]=await Promise.all([api("/rest/v1/services?select=*&order=sort_order",{timeout:15000}),api("/rest/v1/settings?select=*&id=eq.1",{timeout:15000})]);
   S=sv.map(mapS);
-  const o=st[0];if(o)C={name:o.business_name||C.name,slogan:o.slogan||C.slogan,whatsapp:o.whatsapp||C.whatsapp,phone:o.phone||C.phone,address:o.address||C.address,hours:o.hours||C.hours,notice:o.price_notice||C.notice};
+  const o=st[0];if(o)cfgOK=true;if(o)C={name:o.business_name||C.name,slogan:o.slogan||C.slogan,whatsapp:o.whatsapp||C.whatsapp,phone:o.phone||C.phone,address:o.address||C.address,hours:o.hours||C.hours,notice:o.price_notice||C.notice};
  }catch(e){loadErr="Impossible de charger les services. Vérifiez votre connexion."}
- loading=false;$("#brand").textContent=C.name;document.title=C.name;render();
+ loading=false;
+ try{$("#brand").textContent=C.name;$("#slogan").textContent=C.slogan;document.title=C.name;render()}finally{endSplash()}
 }
 function go(v,id){view=v;if(id!==undefined)cur=id;render();window.scrollTo(0,0)}
 function render(){
@@ -129,15 +210,24 @@ function render(){
 }
 /* ---- Écrans clients ---- */
 const row=s=>`<button class="row" onclick="go('detail',${s.id})"><span class="ic">${s.i}</span><span class="tx">${esc(s.n)}<span class="pr${s.p?"":" dv"}">${esc(price(s))}</span></span><span class="go">Détails ›</span></button>`;
+const noCfg=()=>`<p class="warn">Coordonnées indisponibles : vérifiez votre connexion. <button class="mini" onclick="location.reload()">Réessayer</button></p>`;
+const IC={doc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>',
+ wa:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8.5 8.5 0 0 1-12.6 7.4L3 21l1.6-5.1A8.5 8.5 0 1 1 21 12z"/><path d="M9 9.5c.5 2.5 2.5 4.5 5 5l1.2-1.2-1.8-1-.9.7c-.8-.3-1.7-1.2-2-2l.7-.9-1-1.8z"/></svg>',
+ list:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>'};
 function home(){
  if(loading)return `<p class="mut" style="margin-top:40px">Chargement…</p>`;
- return `<section class="hero"><h1>${esc(C.name)}</h1><p>${esc(C.slogan)}</p>
- <button class="btn y" onclick="go('form',0)">Faire une demande</button>
- <a class="btn g" href="${wa("Bonjour "+C.name+", j’ai une question.")}" target="_blank" rel="noopener">💬 WhatsApp</a>
- <button class="btn o" onclick="go('services')">Voir tous les services</button></section>
+ const num=cfgOK?String(C.whatsapp).replace(/\D/g,""):"";
+ return `<h1 class="sr">${esc(C.name)}</h1>
  ${loadErr?`<p class="warn" style="margin-top:16px">${loadErr} <button class="mini" onclick="location.reload()">Réessayer</button></p>`:""}
- <h2>Services les plus demandés</h2><div class="list">${S.filter(s=>[5,6,2,4,7,9].includes(s.id)).map(row).join("")}</div>
- <p class="mut" style="margin-top:12px"><small>${esc(C.notice)}.</small></p>`;
+ <section class="banner" aria-label="Nos atouts"><b>Rapide • Fiable • Proche de vous</b><i></i></section>
+ <div class="acts">
+  <button class="act a1" type="button" onclick="go('form',0)">${IC.doc}<span>Faire une demande</span></button>
+  ${cfgOK?`<a class="act a2" href="${wa("Bonjour "+C.name+", j’ai une question.")}" target="_blank" rel="noopener">${IC.wa}<span>WhatsApp</span>${num?`<small>+${esc(num)}</small>`:""}</a>`:`<button class="act a2" type="button" onclick="location.reload()">${IC.wa}<span>WhatsApp</span><small>Réessayer</small></button>`}
+  <button class="act a3" type="button" onclick="go('services')">${IC.list}<span>Voir tous les services</span></button>
+ </div>
+ ${S.length?`<h2>Nos services</h2><p class="mut" style="margin:-2px 0 10px"><small>Les plus demandés</small></p>
+ <div class="list">${S.filter(s=>[5,6,2,4,7,9].includes(s.id)).map(row).join("")}</div>
+ <p class="mut" style="margin-top:12px"><small>${esc(C.notice)}.</small></p>`:""}`;
 }
 function services(){
  return `<h1>Nos services</h1><p class="warn"><b>Prix provisoires.</b> ${esc(C.notice)}. Nous confirmons le prix final par WhatsApp ou par téléphone.</p><div class="list" style="margin-top:12px">${S.map(row).join("")}</div>`;
@@ -225,9 +315,9 @@ async function findReq(){
 }
 function contact(){
  return `<h1>Nous contacter</h1><p class="mut">Pour confirmer un prix, poser une question ou payer, parlez directement à notre équipe.</p>
- <a class="btn g w" href="${wa("Bonjour "+C.name+", j’aimerais des informations.")}" target="_blank" rel="noopener">💬 Écrire sur WhatsApp</a>
+ ${cfgOK?`<a class="btn g w" href="${wa("Bonjour "+C.name+", j’aimerais des informations.")}" target="_blank" rel="noopener">💬 Écrire sur WhatsApp</a>
  <a class="btn w" href="tel:${esc(C.phone)}">📞 Appeler maintenant</a>
- <h2>Horaires</h2><p>${esc(C.hours)}</p><h2>Adresse</h2><p>${esc(C.address)}</p>
+ <h2>Horaires</h2><p>${esc(C.hours)}</p><h2>Adresse</h2><p>${esc(C.address)}</p>`:noCfg()}
  <p style="margin-top:24px"><button class="mini" onclick="go('privacy')">Confidentialité</button></p>
  <p style="margin-top:12px"><button class="mini" onclick="go('admin')">Espace administration</button></p>`;
 }
@@ -237,7 +327,7 @@ function privacy(){
  <p>Pour limiter les abus, nous enregistrons aussi votre adresse IP. Elle est effacée automatiquement après 30 jours.</p>
  <p>Vos documents ne sont visibles que par notre équipe.</p>
  <p>Pour faire supprimer vos données, contactez-nous sur WhatsApp.</p>
- <a class="btn g w" href="${wa("Bonjour "+C.name+", je souhaite faire supprimer mes données.")}" target="_blank" rel="noopener">💬 Demander la suppression</a>`;
+ ${cfgOK?`<a class="btn g w" href="${wa("Bonjour "+C.name+", je souhaite faire supprimer mes données.")}" target="_blank" rel="noopener">💬 Demander la suppression</a>`:noCfg()}`;
 }
 /* ---- Espace administration ---- */
 function admin(){
@@ -371,7 +461,7 @@ async function saveSet(){
  try{
   const r=await patch("/rest/v1/settings?id=eq.1",o);ASET=r[0];
   C={name:o.business_name,slogan:o.slogan||C.slogan,whatsapp:o.whatsapp,phone:o.phone,address:o.address,hours:o.hours,notice:o.price_notice||C.notice};
-  $("#brand").textContent=C.name;document.title=C.name;
+  $("#brand").textContent=C.name;$("#slogan").textContent=C.slogan;document.title=C.name;
   er.textContent="";alert("Coordonnées enregistrées.");drawAdmin();
  }catch(e){er.textContent="Enregistrement impossible : "+e.message}
 }
