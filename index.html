@@ -100,6 +100,17 @@ nav button{flex:1;min-width:0;min-height:60px;padding:0 2px;background:none;bord
 nav button span{font-size:1.4rem;line-height:1}
 nav button.on{color:var(--pri);font-weight:800;box-shadow:inset 0 3px 0 var(--cy)}
 .files{font-size:.9rem;color:var(--mut)}
+.codebox{margin:14px 0;padding:16px;text-align:center;border-radius:14px;border:2px dashed var(--pri);background:var(--card)}
+.codebox b{display:block;font:800 1.9rem/1.2 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.12em;margin:6px 0 10px;user-select:all}
+.pbox{margin-top:12px;padding:12px;border-radius:12px;border:1.5px solid var(--pri);background:var(--bg)}
+.pl{display:flex;justify-content:space-between;gap:8px;padding:3px 0}
+.pl.t{border-top:1px solid var(--line);margin-top:6px;padding-top:8px;font-weight:800}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.two .btn{margin:0;padding:0 8px}
+.det{margin:12px 0 0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.det div{display:flex;justify-content:space-between;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:.9rem}
+.det div:last-child{border-bottom:0}
+.det span{color:var(--mut)}
 </style>
 </head>
 <body>
@@ -242,6 +253,19 @@ function detail(){
  <button class="btn w" onclick="go('form',${s.id})">${s.p?"Faire une demande":"Demander un devis"}</button>
  <a class="btn o w" href="${wa("Bonjour, j’ai une question sur : "+s.n)}" target="_blank" rel="noopener">💬 Poser une question</a>`;
 }
+const DL={urgent:"Urgent",aujourdhui:"Pour aujourd’hui",demain:"Pour demain",pas_presse:"Pas pressé"};
+const WK={recue:"Reçue",en_traitement:"En cours de traitement",terminee:"Terminée"};
+const FL={aucun:"Pas encore disponible",disponible:"Disponible"};
+const HM={retrait:"Retrait à la boutique",livraison:"Livraison"};
+const HS={sans_objet:"Pas encore concerné",a_preparer:"À préparer",pret:"Prêt",en_route:"En route",remis:"Remis"};
+const ERR={invalide:"Numéro ou code incorrect.",bloque:"Trop d’essais incorrects. Réessayez dans 15 minutes, ou contactez-nous sur WhatsApp.",limite:"Trop de recherches depuis cette connexion. Réessayez un peu plus tard."};
+const errMsg=k=>ERR[k]||"Opération impossible pour le moment.";
+const fc=n=>Number(n).toLocaleString("fr-FR")+" FC";
+const normCode=c=>String(c||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+const fmtCode=c=>{const r=normCode(c);return r.length===8?r.slice(0,4)+"-"+r.slice(4):r};
+const dt=x=>new Date(x).toLocaleDateString("fr-FR");
+let TRK={};
+function setRec(no,patch){const L=MY();const i=L.findIndex(x=>x.no===no);if(i>=0){L[i]=Object.assign({},L[i],patch);saveMY(L)}}
 function form(){
  return `<button class="back" onclick="go('${cur?"detail":"services"}')">‹ Retour</button><h1>Votre demande</h1>
  <label for="fs">Service choisi</label>
@@ -250,6 +274,9 @@ function form(){
  <label for="ft">Numéro de téléphone (obligatoire)</label><input id="ft" type="tel" autocomplete="tel" placeholder="+243 ...">
  <label for="fd">Description de la demande</label><textarea id="fd" placeholder="Ex. : 12 pages à imprimer en couleur, recto verso"></textarea>
  <label for="fp">Nombre de pages (si nécessaire)</label><input id="fp" type="number" inputmode="numeric" min="1" placeholder="Ex. : 12">
+ <label for="fl">Délai souhaité</label>
+ <select id="fl"><option value="pas_presse">Pas pressé</option><option value="demain">Pour demain</option><option value="aujourdhui">Pour aujourd’hui</option><option value="urgent">Urgent</option></select>
+ <p class="mut"><small>Un supplément peut s’appliquer pour une demande urgente. Le prix vous est confirmé avant le début du travail.</small></p>
  <label for="ff">Joindre un fichier (facultatif)</label><input id="ff" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt">
  <p class="mut"><small>5 fichiers maximum, 10 Mo chacun.</small></p>
  <div class="err" id="err" role="alert"></div>
@@ -258,7 +285,7 @@ function form(){
 }
 async function send(){
  if(busy)return;
- const g=i=>$("#"+i).value.trim(),sid=+$("#fs").value,n=g("fn"),t=g("ft"),d=g("fd"),pg=g("fp"),err=m=>{$("#err").textContent=m};
+ const g=i=>$("#"+i).value.trim(),sid=+$("#fs").value,n=g("fn"),t=g("ft"),d=g("fd"),pg=g("fp"),dl=$("#fl").value,err=m=>{$("#err").textContent=m};
  if(!sid||n.length<2||d.length<3)return err("Choisissez un service, puis remplissez votre nom et la description.");
  if(t.replace(/\D/g,"").length<8)return err("Le numéro de téléphone est obligatoire pour que nous puissions vous contacter.");
  const files=[...$("#ff").files];
@@ -266,7 +293,9 @@ async function send(){
  for(const f of files){if(f.size>10485760)return err(f.name+" dépasse 10 Mo.");if(!OK.includes(f.type))return err(f.name+" : ce type de fichier n’est pas accepté.")}
  busy=true;const b=$("#sb");b.disabled=true;b.textContent="Envoi en cours…";err("");
  try{
-  const r=(await rpc("create_request",{p_name:n,p_phone:t,p_service_id:sid,p_description:d,p_pages:pg?+pg:null}))[0],failed=[];
+  const r=(await rpc("create_request_v2",{p_name:n,p_phone:t,p_service_id:sid,p_description:d,p_pages:pg?+pg:null,p_delay_choice:dl}))[0],failed=[];
+  const rec={no:r.new_order_number,phone:t,code:fmtCode(r.access_code),name:n,sid,date:new Date().toLocaleDateString("fr-FR"),delay:dl};
+  saveMY([rec,...MY()]);last={...rec,failed,nfiles:files.length};
   for(const f of files){
    try{
     const path=r.new_id+"/"+Date.now()+"_"+clean(f.name);
@@ -274,15 +303,21 @@ async function send(){
     await rpc("register_file",{p_request_id:r.new_id,p_file_name:f.name,p_storage_path:path,p_size_bytes:f.size});
    }catch(e){failed.push(f.name)}
   }
-  const rec={no:r.new_order_number,phone:t,name:n,sid,date:new Date().toLocaleDateString("fr-FR")};
-  saveMY([rec,...MY()]);last={...rec,failed,nfiles:files.length};busy=false;go("done");
+  busy=false;go("done");
  }catch(e){busy=false;b.disabled=false;b.textContent="Envoyer la demande";err("Échec de l’envoi : "+e.message)}
+}
+async function copyCode(){
+ const c=fmtCode(last&&last.code);let ok=false;
+ try{await navigator.clipboard.writeText(c);ok=true}catch(e){try{const t=document.createElement("textarea");t.value=c;document.body.appendChild(t);t.select();ok=document.execCommand("copy");t.remove()}catch(x){}}
+ const b=$(".codebox button");if(b)b.textContent=ok?"Code copié ✓":"Copie impossible : notez-le à la main";
 }
 function done(){
  const r=last;if(!r)return track();
  const s=svc(r.sid),m="Bonjour "+C.name+", ma demande "+r.no+" : "+s.n+". Nom : "+r.name+". Pouvez-vous me confirmer le prix et le paiement ?";
  return `<h1>Votre demande a bien été reçue</h1><p class="mut">Votre numéro de commande est <b>${esc(r.no)}</b>. Gardez-le pour suivre votre demande.</p>
- <div class="ticket"><div class="hd"><span class="no">${esc(r.no)}</span><span class="stamp">Reçue</span></div><h3>${s.i} ${esc(s.n)}</h3><p class="mut">${esc(r.name)}, le ${esc(r.date)}${r.nfiles?"<br>📎 "+(r.nfiles-r.failed.length)+" fichier(s) envoyé(s)":""}</p></div>
+ <div class="ticket"><div class="hd"><span class="no">${esc(r.no)}</span><span class="stamp">Reçue</span></div><h3>${s.i} ${esc(s.n)}</h3><p class="mut">${esc(r.name)}, le ${esc(r.date)}${r.delay?"<br>⏱️ Délai souhaité : "+esc(DL[r.delay]||""):""}${r.nfiles?"<br>📎 "+(r.nfiles-r.failed.length)+" fichier(s) envoyé(s)":""}</p></div>
+ ${r.code?`<div class="codebox"><small>Votre code d’accès</small><b>${esc(r.code)}</b><button class="btn o w" type="button" onclick="copyCode()">Copier le code</button></div>
+ <p class="warn"><b>Notez ce code maintenant.</b> Il est nécessaire pour suivre votre demande, accepter le prix et récupérer vos documents. Il ne sera pas affiché une deuxième fois sur cet écran ; il reste enregistré sur ce téléphone, dans « Mes demandes ». Si vous le perdez, contactez-nous : nous pourrons en créer un nouveau.</p>`:""}
  ${r.failed.length?`<p class="warn">Ces fichiers n’ont pas pu être envoyés : ${r.failed.map(esc).join(", ")}. Envoyez-les-nous par WhatsApp.</p>`:""}
  <a class="btn g w" href="${wa(m)}" target="_blank" rel="noopener">💬 Confirmer le prix sur WhatsApp</a>
  <a class="btn o w" href="tel:${esc(C.phone)}">📞 Appeler</a>
@@ -293,25 +328,91 @@ function track(){
  return `<h1>Mes demandes</h1><p class="mut">Suivez l’évolution de vos demandes.</p>
  ${MY().length?`<div id="mylist"><p class="mut">Chargement…</p></div>`:`<p class="mut">Aucune demande enregistrée sur ce téléphone.</p>`}
  <h2>Retrouver une demande</h2>
- <label for="tn">Numéro de commande</label><input id="tn" placeholder="BF-0001" autocapitalize="characters">
- <label for="tp">Téléphone utilisé pour la demande</label><input id="tp" type="tel">
- <div class="err" id="terr" role="alert"></div><button class="btn w" onclick="findReq()">Rechercher</button>`;
+ <label for="tn">Numéro de commande</label><input id="tn" placeholder="BF-0001" autocapitalize="characters" autocomplete="off">
+ <label for="tc">Code d’accès</label><input id="tc" placeholder="XXXX-XXXX" autocapitalize="characters" autocomplete="off" maxlength="12">
+ <div class="err" id="terr" role="alert"></div><button class="btn w" onclick="findReq()">Rechercher</button>
+ ${cfgOK?`<p class="mut" style="margin-top:12px"><small>Code perdu ? <a href="${wa("Bonjour "+C.name+", j’ai perdu le code d’accès de ma demande.")}" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Contactez-nous sur WhatsApp</a> : nous pourrons vous en donner un nouveau.</small></p>`:""}`;
+}
+function priceBox(m,d){
+ const s=d.price_status,no=esc(m.no);
+ if(s==="propose")return `<div class="pbox"><b>Prix proposé</b>
+  <div class="pl"><span>Travail</span><span>${fc(d.price_work_fc)}</span></div>
+  ${d.price_urgency_fc>0?`<div class="pl"><span>Supplément d’urgence</span><span>${fc(d.price_urgency_fc)}</span></div>`:""}
+  ${d.price_delivery_fc>0?`<div class="pl"><span>Livraison</span><span>${fc(d.price_delivery_fc)}</span></div>`:""}
+  <div class="pl t"><span>Total</span><span>${fc(d.price_total_fc)}</span></div>
+  ${d.price_note?`<p class="mut"><small>${esc(d.price_note)}</small></p>`:""}
+  <p class="mut"><small>Le paiement se fait directement avec nous (espèces ou Mobile Money).</small></p>
+  <div class="two"><button class="btn g" type="button" data-no="${no}" data-a="1" onclick="answer(this)">Accepter ce prix</button><button class="btn o" type="button" data-no="${no}" data-a="0" onclick="answer(this)">Refuser</button></div></div>`;
+ if(s==="accepte")return `<p style="margin-top:12px">✅ <b>Prix accepté : ${fc(d.price_accepted_total_fc)}</b>${d.price_responded_at?`<br><small class="mut">le ${esc(dt(d.price_responded_at))}</small>`:""}</p>`;
+ if(s==="refuse")return `<p style="margin-top:12px"><b>Vous avez refusé ce prix.</b> Contactez-nous pour en discuter.</p>${cfgOK?`<a class="btn g w" href="${wa("Bonjour "+C.name+", au sujet de ma demande "+m.no+" : je souhaite discuter du prix.")}" target="_blank" rel="noopener">💬 Discuter du prix sur WhatsApp</a>`:""}`;
+ return `<p class="mut" style="margin-top:12px"><small>Prix : nous vous le confirmons avant de commencer.</small></p>`;
+}
+function okCard(m,d){
+ const st=CODE.indexOf(d.status),det=d.work_status!=="recue"||d.file_status!=="aucun"||d.handover_status!=="sans_objet"||d.handover_mode==="livraison";
+ return `<div class="ticket"><div class="hd"><span class="no">${esc(m.no)}</span><span class="stamp">${st>=0?ST[st]:"?"}</span></div>
+ <h3>${esc(d.service_name||svc(m.sid).n)}</h3><p class="mut">${esc(dt(d.created_at))}<br>⏱️ Délai souhaité : ${esc(DL[d.delay_choice]||"")}${d.delay_promised_at?" · promis pour le "+esc(dt(d.delay_promised_at)):""}${d.delay_note?"<br>"+esc(d.delay_note):""}</p>
+ ${st>=0?steps(st):""}
+ ${det?`<div class="det"><div><span>Travail</span><b>${esc(WK[d.work_status]||"")}</b></div><div><span>Document final</span><b>${esc(FL[d.file_status]||"")}</b></div><div><span>${esc(HM[d.handover_mode]||"Remise")}</span><b>${esc(HS[d.handover_status]||"")}</b></div></div>`:""}
+ ${priceBox(m,d)}
+ <button class="mini" type="button" data-no="${esc(m.no)}" onclick="showCode(this)">Afficher mon code d’accès</button></div>`;
+}
+function errCard(m,k){
+ const bad=k==="invalide";
+ return `<div class="ticket"><div class="hd"><span class="no">${esc(m.no)}</span><span class="stamp">?</span></div><h3>${esc(svc(m.sid).n)}</h3><p class="mut">${esc(m.date)}</p>
+ <p class="mut">${k==="reseau"?"Statut indisponible pour le moment.":bad?"Le code enregistré n’est plus valable. Entrez le code d’accès actuel.":esc(errMsg(k))}</p>
+ ${bad?`<input placeholder="XXXX-XXXX" autocapitalize="characters" autocomplete="off" maxlength="12"><button class="btn w" type="button" data-no="${esc(m.no)}" onclick="fixCode(this)">Enregistrer ce code</button><div class="err"></div>`:""}</div>`;
+}
+function oldCard(m,r){
+ const st=r?CODE.indexOf(r.status):-1;
+ return `<div class="ticket"><div class="hd"><span class="no">${esc(m.no)}</span><span class="stamp">${st>=0?ST[st]:"?"}</span></div><h3>${esc(r?r.service_name:svc(m.sid).n)}</h3><p class="mut">${esc(m.date)}</p>${st>=0?steps(st):`<p class="mut">Statut indisponible pour le moment.</p>`}</div>`;
+}
+async function fetchOne(m){
+ if(!m.code){try{return {m,old:(await rpc("track_request",{p_order_number:m.no,p_phone:m.phone}))[0]||null}}catch(e){return {m,old:null}}}
+ if(m.bad)return {m,err:"invalide"};
+ const c=TRK[m.no];if(c&&Date.now()-c.t<60000)return {m,d:c.d};
+ try{
+  const d=await rpc("track_order",{p_order_number:m.no,p_code:m.code});
+  if(d&&d.ok){TRK[m.no]={t:Date.now(),d};return {m,d}}
+  const k=(d&&d.error)||"invalide";if(k==="invalide")setRec(m.no,{bad:true});
+  return {m,err:k};
+ }catch(e){return {m,err:"reseau"}}
 }
 async function loadMy(){
  const box=$("#mylist");if(!box)return;
- const out=await Promise.all(MY().map(async m=>{try{return {m,r:(await rpc("track_request",{p_order_number:m.no,p_phone:m.phone}))[0]}}catch(e){return {m,r:null}}}));
+ const all=MY(),L=all.slice(0,6);
+ const out=await Promise.all(L.map(fetchOne));
  const b2=$("#mylist");if(!b2)return;
- b2.innerHTML=out.map(({m,r})=>{const st=r?CODE.indexOf(r.status):-1;return `<div class="ticket"><div class="hd"><span class="no">${esc(m.no)}</span><span class="stamp">${st>=0?ST[st]:"?"}</span></div><h3>${esc(r?r.service_name:svc(m.sid).n)}</h3><p class="mut">${esc(m.date)}</p>${st>=0?steps(st):`<p class="mut">Statut indisponible pour le moment.</p>`}</div>`}).join("");
+ b2.innerHTML=out.map(x=>x.d?okCard(x.m,x.d):x.err?errCard(x.m,x.err):oldCard(x.m,x.old)).join("")+(all.length>6?`<p class="mut"><small>Les demandes plus anciennes ne sont pas actualisées automatiquement : utilisez « Retrouver une demande ».</small></p>`:"");
+}
+function showCode(b){const r=MY().find(x=>x.no===b.dataset.no);b.textContent=r&&r.code?"Code d’accès : "+fmtCode(r.code):"Code indisponible sur ce téléphone";b.disabled=true}
+async function fixCode(b){
+ const no=b.dataset.no,i=b.parentElement.querySelector("input"),e=b.parentElement.querySelector(".err"),c=fmtCode(i.value);
+ if(normCode(c).length!==8){e.textContent="Le code comporte 8 caractères (ex. ABCD-2345).";return}
+ setRec(no,{code:c,bad:false});delete TRK[no];loadMy();
+}
+async function answer(b){
+ const no=b.dataset.no,acc=b.dataset.a==="1",m=MY().find(x=>x.no===no);
+ if(!m||!m.code||busy)return;
+ if(!confirm(acc?"Accepter ce prix ?":"Refuser ce prix ?"))return;
+ busy=true;b.disabled=true;
+ try{
+  const r=await rpc("respond_price",{p_order_number:no,p_code:m.code,p_accept:acc});
+  delete TRK[no];
+  if(r&&!r.ok)alert(r.error==="pas_de_prix_a_confirmer"?"Ce prix a déjà été traité ou vient de changer. Nous actualisons l’affichage.":errMsg(r.error));
+ }catch(e){alert("Impossible pour le moment : "+e.message)}
+ busy=false;if(view==="track")loadMy();
 }
 async function findReq(){
- const n=$("#tn").value.trim().toUpperCase(),p=$("#tp").value.trim(),e=$("#terr");
- if(!/^BF-\d+$/.test(n)||p.replace(/\D/g,"").length<8){e.textContent="Entrez un numéro valide (ex. BF-0001) et le téléphone utilisé.";return}
+ const n=$("#tn").value.trim().toUpperCase(),raw=normCode($("#tc").value),e=$("#terr");
+ if(!/^BF-\d+$/.test(n)||raw.length!==8){e.textContent="Entrez votre numéro (ex. BF-0001) et votre code d’accès à 8 caractères.";return}
+ if(busy)return;busy=true;e.textContent="";
  try{
-  const r=await rpc("track_request",{p_order_number:n,p_phone:p});
-  if(!r.length){e.textContent="Aucune demande trouvée avec ces informations.";return}
-  const L=MY();if(!L.some(x=>x.no===n))saveMY([{no:n,phone:p,name:"",sid:0,date:new Date(r[0].created_at).toLocaleDateString("fr-FR")},...L]);
-  render();
- }catch(x){e.textContent="Recherche impossible : "+x.message}
+  const d=await rpc("track_order",{p_order_number:n,p_code:raw});
+  if(!d||!d.ok){e.textContent=errMsg(d&&d.error);busy=false;return}
+  const L=MY(),i=L.findIndex(x=>x.no===n),c=fmtCode(raw);
+  if(i>=0)L[i]=Object.assign({},L[i],{code:c,bad:false});else L.unshift({no:n,phone:"",code:c,name:"",sid:0,date:dt(d.created_at)});
+  saveMY(L);TRK[n]={t:Date.now(),d};busy=false;render();
+ }catch(x){busy=false;e.textContent="Recherche impossible : "+x.message}
 }
 function contact(){
  return `<h1>Nous contacter</h1><p class="mut">Pour confirmer un prix, poser une question ou payer, parlez directement à notre équipe.</p>
