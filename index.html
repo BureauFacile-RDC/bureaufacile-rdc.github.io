@@ -111,6 +111,10 @@ nav button.on{color:var(--pri);font-weight:800;box-shadow:inset 0 3px 0 var(--cy
 .det div{display:flex;justify-content:space-between;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:.9rem}
 .det div:last-child{border-bottom:0}
 .det span{color:var(--mut)}
+.adet{margin-top:10px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.adet summary{min-height:48px;padding:0 12px;display:flex;align-items:center;font-weight:700;cursor:pointer}
+.adb{padding:0 12px 12px}
+.adet,.adet *{box-sizing:border-box}
 </style>
 </head>
 <body>
@@ -449,7 +453,7 @@ async function login(){
 }
 function logout(){SES=null;ADM=[];try{sessionStorage.removeItem("bf_ses")}catch(e){}go("home")}
 async function loadAdmin(){
- try{[ADM,ASV,ASET]=await Promise.all([api("/rest/v1/requests?select=*,services(name,icon),request_files(*)&order=created_at.desc",{tok:SES.tok}),api("/rest/v1/services?select=*&order=sort_order",{tok:SES.tok}),api("/rest/v1/settings?select=*&id=eq.1",{tok:SES.tok}).then(r=>r[0]||null)]);drawAdmin()}
+ try{[ADM,ASV,ASET]=await Promise.all([api("/rest/v1/requests?select="+RCOLS+",services(name,icon),request_files(*)&order=created_at.desc",{tok:SES.tok}),api("/rest/v1/services?select=*&order=sort_order",{tok:SES.tok}),api("/rest/v1/settings?select=*&id=eq.1",{tok:SES.tok}).then(r=>r[0]||null)]);drawAdmin()}
  catch(e){if(/JWT|expired|401/i.test(e.message)){logout();return}const b=$("#adm");if(b)b.innerHTML=`<p class="warn">${esc(e.message)}</p>`}
 }
 function drawAdmin(){
@@ -464,16 +468,111 @@ function drawAdmin(){
  <div class="tabs">${tabs.map(([k,n,v])=>`<button class="${af===k?"on":""}" onclick="af='${k}';drawAdmin()">${n} (${v})</button>`).join("")}</div>
  ${L.length?L.map(adminCard).join(""):`<p class="mut">Aucune demande dans cette catégorie.</p>`}`;
 }
+const RCOLS="id,order_number,client_name,client_phone,service_id,description,pages,status,created_at,delay_choice,delay_promised_at,delay_note,work_status,file_status,handover_mode,handover_status,price_work_fc,price_urgency_fc,price_delivery_fc,price_total_fc,price_note,price_status,price_proposed_at,price_responded_at,price_accepted_total_fc,price_accepted_via,access_code_set_at,access_failures,access_blocked_until";
+const PS={a_confirmer:"À confirmer",propose:"Proposé au client",accepte:"Accepté",refuse:"Refusé"};
+const VIA={application:"dans l’application",whatsapp:"par WhatsApp ou téléphone",sur_place:"sur place"};
+const WORKOF={recue:"recue",en_traitement:"en_traitement",prete:"terminee",livree:"terminee"};
+const MAXFC=10000000;
+let OPENS=new Set(),NEWCODE={};
+const togg=(k,o)=>{if(o)OPENS.add(k);else OPENS.delete(k)};
+const dday=x=>{if(!x)return"";const d=new Date(x);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+async function upd(id,body){
+ const r=await api("/rest/v1/requests?id=eq."+id+"&select="+RCOLS,{method:"PATCH",tok:SES.tok,headers:{"Content-Type":"application/json",Prefer:"return=representation"},body:JSON.stringify(body)});
+ if(!r||!r.length)throw new Error("Modification refusée par le serveur");
+ const cur=ADM.find(x=>x.id===id);if(cur)Object.assign(cur,r[0]);
+ return r[0];
+}
 function adminCard(r){
  const sv=r.services||{},st=CODE.indexOf(r.status),m="Bonjour "+r.client_name+", ici "+C.name+" au sujet de votre demande "+r.order_number+".";
+ const op=s=>OPENS.has(r.id+":"+s)?" open":"",tg=s=>`ontoggle="togg('${r.id}:${s}',this.open)"`;
+ const started=r.status!=="recue"||r.work_status!=="recue",blocked=r.access_blocked_until&&new Date(r.access_blocked_until)>new Date(),nc=NEWCODE[r.id];
+ const num=v=>v==null?"":v;
  return `<div class="ticket"><div class="hd"><span class="no">${esc(r.order_number)}</span><span class="stamp">${ST[st]}</span></div>
  <h3>${sv.icon||""} ${esc(sv.name)}</h3>
- <p class="mut">${esc(r.client_name)}, ${esc(r.client_phone)}<br>${new Date(r.created_at).toLocaleString("fr-FR")}${r.pages?", "+r.pages+" pages":""}</p>
+ <p class="mut">${esc(r.client_name)}, ${esc(r.client_phone)}<br>${new Date(r.created_at).toLocaleString("fr-FR")}${r.pages?", "+r.pages+" pages":""}<br>⏱️ Délai souhaité : ${esc(DL[r.delay_choice]||"")}</p>
  <p>${esc(r.description)}</p>
  ${(r.request_files||[]).map(f=>`<button class="fbtn" onclick="dl('${f.id}')">⬇️ ${esc(f.file_name)}</button>`).join("")}
- <label for="s${r.id}">Statut</label><select id="s${r.id}" onchange="setSt('${r.id}',this.value)">${CODE.map((c,k)=>`<option value="${c}"${k===st?" selected":""}>${ST[k]}</option>`).join("")}</select>
+ ${started&&r.price_status!=="accepte"?`<p class="warn">⚠️ Le travail a commencé, mais le client n’a pas accepté de prix (${esc(PS[r.price_status]||"")}). Vous pouvez continuer ; pensez à confirmer le prix avec lui.</p>`:""}
+ <label for="s${r.id}">Avancement du travail (vu par le client)</label><select id="s${r.id}" onchange="setSt('${r.id}',this.value)">${CODE.map((c,k)=>`<option value="${c}"${k===st?" selected":""}>${ST[k]}</option>`).join("")}</select>
+ <details class="adet"${op("p")} ${tg("p")}><summary>💰 Prix : ${esc(PS[r.price_status]||"")}${r.price_total_fc!=null?" · "+fc(r.price_total_fc):""}</summary><div class="adb">
+  <label for="pw${r.id}">Prix du travail (FC)</label><input id="pw${r.id}" type="number" inputmode="numeric" min="0" max="${MAXFC}" value="${num(r.price_work_fc)}" oninput="ptot('${r.id}')">
+  <label for="pu${r.id}">Supplément d’urgence (FC)</label><input id="pu${r.id}" type="number" inputmode="numeric" min="0" max="${MAXFC}" value="${r.price_urgency_fc||0}" oninput="ptot('${r.id}')">
+  <label for="pd${r.id}">Livraison (FC)</label><input id="pd${r.id}" type="number" inputmode="numeric" min="0" max="${MAXFC}" value="${r.price_delivery_fc||0}" oninput="ptot('${r.id}')">
+  <label for="pn${r.id}">Note pour le client (facultatif)</label><input id="pn${r.id}" maxlength="300" value="${esc(r.price_note||"")}">
+  <p class="mut" id="pt${r.id}" style="margin-top:8px">Total : ${fc((r.price_work_fc||0)+(r.price_urgency_fc||0)+(r.price_delivery_fc||0))}</p>
+  <div class="err" id="pe${r.id}" role="alert"></div>
+  <button class="btn w" onclick="propose('${r.id}')">Proposer ce prix au client</button>
+  ${r.price_status==="accepte"?`<p style="margin-top:10px">✅ Accepté : <b>${fc(r.price_accepted_total_fc)}</b> ${esc(VIA[r.price_accepted_via]||"")}${r.price_responded_at?", le "+esc(dt(r.price_responded_at)):""}.<br><small class="mut">Si vous changez un montant, le client devra confirmer de nouveau.</small></p>`:""}
+  ${r.price_work_fc!=null&&r.price_status!=="accepte"?`<label for="pv${r.id}">Le client a déjà accepté ce prix…</label><select id="pv${r.id}"><option value="whatsapp">par WhatsApp ou téléphone</option><option value="sur_place">sur place</option></select><button class="btn o w" onclick="agree('${r.id}')">Enregistrer l’accord du client</button>`:""}
+ </div></details>
+ <details class="adet"${op("d")} ${tg("d")}><summary>⏱️ Délai promis</summary><div class="adb">
+  <label for="dd${r.id}">Date promise (facultatif)</label><input id="dd${r.id}" type="date" value="${esc(dday(r.delay_promised_at))}">
+  <label for="dn${r.id}">Note sur le délai (facultatif)</label><input id="dn${r.id}" maxlength="200" value="${esc(r.delay_note||"")}">
+  <div class="err" id="de${r.id}" role="alert"></div>
+  <button class="btn w" onclick="saveDelay('${r.id}')">Enregistrer le délai</button>
+ </div></details>
+ <details class="adet"${op("h")} ${tg("h")}><summary>📦 Remise : ${esc(HM[r.handover_mode]||"")} · ${esc(HS[r.handover_status]||"")}</summary><div class="adb">
+  <label for="hm${r.id}">Mode</label><select id="hm${r.id}">${Object.keys(HM).map(k=>`<option value="${k}"${k===r.handover_mode?" selected":""}>${HM[k]}</option>`).join("")}</select>
+  <label for="hs${r.id}">Étape</label><select id="hs${r.id}">${Object.keys(HS).map(k=>`<option value="${k}"${k===r.handover_status?" selected":""}>${HS[k]}</option>`).join("")}</select>
+  <button class="btn w" onclick="saveHandover('${r.id}')">Enregistrer la remise</button>
+ </div></details>
+ <details class="adet"${op("a")} ${tg("a")}><summary>🔑 Accès du client${blocked?" · 🔒 bloqué":""}</summary><div class="adb">
+  <p class="mut" style="margin-top:10px">${r.access_code_set_at?"Code créé le "+esc(dt(r.access_code_set_at))+".":"Aucun code (ancienne demande)."} Échecs en cours : ${r.access_failures||0}.</p>
+  ${blocked?`<p class="warn">🔒 Accès bloqué jusqu’à ${esc(new Date(r.access_blocked_until).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}))}.</p><button class="btn o w" onclick="unblock('${r.id}')">Débloquer l’accès du client</button>`:""}
+  ${nc?`<div class="codebox"><small>Nouveau code (affiché ici une seule fois)</small><b>${esc(nc)}</b><a class="btn g w" href="${wa("Bonjour "+r.client_name+", voici votre nouveau code d’accès pour la demande "+r.order_number+" : "+nc+". Gardez-le précieusement.",intl(r.client_phone))}" target="_blank" rel="noopener">💬 Envoyer par WhatsApp</a></div>`:""}
+  <button class="btn o w" onclick="resetCode('${r.id}')">Créer un nouveau code d’accès</button>
+ </div></details>
  <a class="btn g w" href="${wa(m,intl(r.client_phone))}" target="_blank" rel="noopener">💬 Contacter le client</a>
  <a class="btn o w" href="tel:${esc(r.client_phone)}">📞 Appeler</a></div>`;
+}
+function ptot(id){
+ const v=k=>Math.max(0,+($("#"+k+id).value||0)),t=$("#pt"+id);
+ if(t)t.textContent="Total : "+fc(v("pw")+v("pu")+v("pd"));
+}
+const okFC=v=>Number.isInteger(v)&&v>=0&&v<=MAXFC;
+async function propose(id){
+ const g=k=>$("#"+k+id).value.trim(),e=$("#pe"+id),w=g("pw"),u=g("pu")||"0",d=g("pd")||"0",note=g("pn");
+ if(w==="")return e.textContent="Entrez le prix du travail.";
+ const W=Number(w),U=Number(u),D=Number(d);
+ if(!okFC(W)||!okFC(U)||!okFC(D))return e.textContent="Chaque montant doit être un nombre entier de 0 à 10 000 000 FC.";
+ e.textContent="";
+ try{
+  const r=await upd(id,{price_work_fc:W,price_urgency_fc:U,price_delivery_fc:D,price_note:note||null,price_status:"propose",price_proposed_at:new Date().toISOString(),price_responded_at:null,price_accepted_total_fc:null,price_accepted_via:null});
+  OPENS.add(id+":p");drawAdmin();alert("Prix proposé au client : "+fc(r.price_total_fc)+".");
+ }catch(x){e.textContent="Enregistrement impossible : "+x.message}
+}
+async function agree(id){
+ const r=ADM.find(x=>x.id===id);if(!r||r.price_work_fc==null)return;
+ const via=$("#pv"+id).value;
+ if(!confirm("Enregistrer que le client a accepté "+fc(r.price_total_fc)+" "+VIA[via]+" ?"))return;
+ try{await upd(id,{price_status:"accepte",price_accepted_total_fc:r.price_total_fc,price_accepted_via:via,price_responded_at:new Date().toISOString()});OPENS.add(id+":p");drawAdmin()}
+ catch(x){alert("Enregistrement impossible : "+x.message)}
+}
+async function saveDelay(id){
+ const day=$("#dd"+id).value,note=$("#dn"+id).value.trim(),e=$("#de"+id);
+ if(note.length>200)return e.textContent="La note est limitée à 200 caractères.";
+ try{await upd(id,{delay_promised_at:day?new Date(day+"T18:00:00").toISOString():null,delay_note:note||null});OPENS.add(id+":d");drawAdmin()}
+ catch(x){e.textContent="Enregistrement impossible : "+x.message}
+}
+async function saveHandover(id){
+ try{await upd(id,{handover_mode:$("#hm"+id).value,handover_status:$("#hs"+id).value});OPENS.add(id+":h");drawAdmin()}
+ catch(x){alert("Enregistrement impossible : "+x.message)}
+}
+async function resetCode(id){
+ if(!confirm("Créer un nouveau code d’accès ? L’ancien code ne fonctionnera plus."))return;
+ try{
+  const c=await rpc("admin_reset_code",{p_request_id:id},SES.tok);
+  NEWCODE[id]=fmtCode(c);const r=ADM.find(x=>x.id===id);if(r){r.access_failures=0;r.access_blocked_until=null;r.access_code_set_at=new Date().toISOString()}
+  OPENS.add(id+":a");drawAdmin();
+ }catch(x){alert("Création du code impossible : "+x.message)}
+}
+async function unblock(id){
+ try{await upd(id,{access_failures:0,access_blocked_until:null});OPENS.add(id+":a");drawAdmin()}
+ catch(x){alert("Déblocage impossible : "+x.message)}
+}
+async function setSt(id,code){
+ try{await upd(id,{status:code,work_status:WORKOF[code]});drawAdmin()}
+ catch(e){alert("Modification impossible : "+e.message);drawAdmin()}
 }
 async function dl(id){
  const f=ADM.flatMap(r=>r.request_files||[]).find(x=>x.id===id);if(!f)return;
@@ -481,12 +580,6 @@ async function dl(id){
   const s=await api("/storage/v1/object/sign/client-files/"+f.storage_path,{method:"POST",tok:SES.tok,headers:{"Content-Type":"application/json"},body:JSON.stringify({expiresIn:300})});
   const a=document.createElement("a");a.href=SUPABASE_URL+"/storage/v1"+s.signedURL+"&download="+encodeURIComponent(f.file_name);document.body.appendChild(a);a.click();a.remove();
  }catch(e){alert("Téléchargement impossible : "+e.message)}
-}
-async function setSt(id,code){
- try{
-  await api("/rest/v1/requests?id=eq."+id,{method:"PATCH",tok:SES.tok,headers:{"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify({status:code})});
-  const r=ADM.find(x=>x.id===id);if(r)r.status=code;drawAdmin();
- }catch(e){alert("Modification impossible : "+e.message)}
 }
 /* ---- Gestion des services (administration) ---- */
 const mapS=s=>({id:s.id,i:s.icon||"📄",n:s.name,p:s.price,x:s.price_extra,t:s.delay||"",d:s.description||""});
