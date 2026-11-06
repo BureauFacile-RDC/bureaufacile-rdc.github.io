@@ -111,10 +111,19 @@ nav button.on{color:var(--pri);font-weight:800;box-shadow:inset 0 3px 0 var(--cy
 .det div{display:flex;justify-content:space-between;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:.9rem}
 .det div:last-child{border-bottom:0}
 .det span{color:var(--mut)}
+.fbox{margin-top:12px;padding:12px;border-radius:12px;border:1.5px solid var(--pri);background:var(--bg)}
+.fl{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--line)}
+.fl>div{flex:1 1 150px;min-width:0;overflow-wrap:anywhere}
+.fl small{display:block;color:var(--mut)}
+.fl .btn{margin:0;padding:0 14px;flex:0 0 auto}
+.fbox .ok{color:var(--tx);font-size:.9rem;margin-top:6px}
 .adet{margin-top:10px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
 .adet summary{min-height:48px;padding:0 12px;display:flex;align-items:center;font-weight:700;cursor:pointer}
 .adb{padding:0 12px 12px}
 .adet,.adet *{box-sizing:border-box}
+.fitem{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:10px;overflow-wrap:anywhere}
+.fitem small{display:block;margin:4px 0}
+.fitem .two{margin-top:6px}
 </style>
 </head>
 <body>
@@ -262,7 +271,7 @@ const WK={recue:"Reçue",en_traitement:"En cours de traitement",terminee:"Termin
 const FL={aucun:"Pas encore disponible",disponible:"Disponible"};
 const HM={retrait:"Retrait à la boutique",livraison:"Livraison"};
 const HS={sans_objet:"Pas encore concerné",a_preparer:"À préparer",pret:"Prêt",en_route:"En route",remis:"Remis"};
-const ERR={invalide:"Numéro ou code incorrect.",bloque:"Trop d’essais incorrects. Réessayez dans 15 minutes, ou contactez-nous sur WhatsApp.",limite:"Trop de recherches depuis cette connexion. Réessayez un peu plus tard."};
+const ERR={invalide:"Numéro ou code incorrect.",bloque:"Trop d’essais incorrects. Réessayez dans 15 minutes, ou contactez-nous sur WhatsApp.",limite:"Trop de recherches depuis cette connexion. Réessayez un peu plus tard.",expire:"Ce document n’est plus disponible (délai de 30 jours dépassé). Contactez-nous.",indisponible:"Ce document n’est pas encore disponible.",introuvable:"Document introuvable. Actualisez la page.",serveur:"Service momentanément indisponible. Réessayez dans un instant."};
 const errMsg=k=>ERR[k]||"Opération impossible pour le moment.";
 const fc=n=>Number(n).toLocaleString("fr-FR")+" FC";
 const normCode=c=>String(c||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
@@ -351,12 +360,36 @@ function priceBox(m,d){
  if(s==="refuse")return `<p style="margin-top:12px"><b>Vous avez refusé ce prix.</b> Contactez-nous pour en discuter.</p>${cfgOK?`<a class="btn g w" href="${wa("Bonjour "+C.name+", au sujet de ma demande "+m.no+" : je souhaite discuter du prix.")}" target="_blank" rel="noopener">💬 Discuter du prix sur WhatsApp</a>`:""}`;
  return `<p class="mut" style="margin-top:12px"><small>Prix : nous vous le confirmons avant de commencer.</small></p>`;
 }
+const fsz=n=>{n=Number(n)||0;return n>=1048576?(n/1048576).toFixed(1).replace(".",",")+" Mo":Math.max(1,Math.round(n/1024))+" Ko"};
+function finalBox(m,d){
+ const L=Array.isArray(d.final_files)?d.final_files:[];
+ if(L.length)return `<div class="fbox"><b>📄 Document final</b>${L.map(f=>`<div class="fl"><div><span>${esc(f.file_name)}</span><small>${fsz(f.size_bytes)} · disponible jusqu’au ${esc(dt(f.expires_at))}</small></div><button class="btn g" type="button" data-no="${esc(m.no)}" data-f="${esc(f.id)}" onclick="dlFinal(this)">⬇️ Télécharger</button></div>`).join("")}
+  <p class="mut"><small>Pour votre sécurité, vos documents sont supprimés automatiquement 30 jours après leur mise à disposition. Téléchargez-les et gardez-en une copie.</small></p><div class="err" role="alert"></div><div class="ok" role="status"></div></div>`;
+ if(d.file_status==="disponible")return `<p class="warn" style="margin-top:12px">Votre document n’est plus disponible en téléchargement (délai de 30 jours dépassé). Contactez-nous.</p>${cfgOK?`<a class="btn g w" href="${wa("Bonjour "+C.name+", ma demande "+m.no+" : mon document n’est plus disponible en téléchargement.")}" target="_blank" rel="noopener">💬 Nous écrire sur WhatsApp</a>`:""}`;
+ return "";
+}
+async function dlFinal(b){
+ const no=b.dataset.no,fid=b.dataset.f,m=MY().find(x=>x.no===no),box=b.closest(".fbox"),e=box.querySelector(".err"),o=box.querySelector(".ok");
+ if(!m||!m.code||busy)return;
+ busy=true;b.disabled=true;e.textContent="";o.textContent="";const t0=b.textContent;b.textContent="Préparation…";
+ try{
+  const r=await api("/functions/v1/download-final",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({order:no,code:m.code,file_id:fid}),timeout:30000});
+  if(!r||!r.ok)e.textContent=errMsg(r&&r.error);
+  else if(typeof r.url!=="string"||r.url.indexOf(SUPABASE_URL+"/storage/")!==0)e.textContent=errMsg("serveur");
+  else{
+   const a=document.createElement("a");a.href=r.url;a.rel="noopener";document.body.appendChild(a);a.click();a.remove();
+   o.textContent="✅ Téléchargement lancé. Vérifiez le dossier « Téléchargements » de votre téléphone.";delete TRK[no];
+  }
+ }catch(x){e.textContent=errMsg("serveur")}
+ busy=false;b.disabled=false;b.textContent=t0;
+}
 function okCard(m,d){
  const st=CODE.indexOf(d.status),det=d.work_status!=="recue"||d.file_status!=="aucun"||d.handover_status!=="sans_objet"||d.handover_mode==="livraison";
  return `<div class="ticket"><div class="hd"><span class="no">${esc(m.no)}</span><span class="stamp">${st>=0?ST[st]:"?"}</span></div>
  <h3>${esc(d.service_name||svc(m.sid).n)}</h3><p class="mut">${esc(dt(d.created_at))}<br>⏱️ Délai souhaité : ${esc(DL[d.delay_choice]||"")}${d.delay_promised_at?" · promis pour le "+esc(dt(d.delay_promised_at)):""}${d.delay_note?"<br>"+esc(d.delay_note):""}</p>
  ${st>=0?steps(st):""}
  ${det?`<div class="det"><div><span>Travail</span><b>${esc(WK[d.work_status]||"")}</b></div><div><span>Document final</span><b>${esc(FL[d.file_status]||"")}</b></div><div><span>${esc(HM[d.handover_mode]||"Remise")}</span><b>${esc(HS[d.handover_status]||"")}</b></div></div>`:""}
+ ${finalBox(m,d)}
  ${priceBox(m,d)}
  <button class="mini" type="button" data-no="${esc(m.no)}" onclick="showCode(this)">Afficher mon code d’accès</button></div>`;
 }
@@ -453,7 +486,7 @@ async function login(){
 }
 function logout(){SES=null;ADM=[];try{sessionStorage.removeItem("bf_ses")}catch(e){}go("home")}
 async function loadAdmin(){
- try{[ADM,ASV,ASET]=await Promise.all([api("/rest/v1/requests?select="+RCOLS+",services(name,icon),request_files(*)&order=created_at.desc",{tok:SES.tok}),api("/rest/v1/services?select=*&order=sort_order",{tok:SES.tok}),api("/rest/v1/settings?select=*&id=eq.1",{tok:SES.tok}).then(r=>r[0]||null)]);drawAdmin()}
+ try{[ADM,ASV,ASET]=await Promise.all([api("/rest/v1/requests?select="+RCOLS+",services(name,icon),request_files(*),final_files(*)&order=created_at.desc",{tok:SES.tok}),api("/rest/v1/services?select=*&order=sort_order",{tok:SES.tok}),api("/rest/v1/settings?select=*&id=eq.1",{tok:SES.tok}).then(r=>r[0]||null)]);drawAdmin()}
  catch(e){if(/JWT|expired|401/i.test(e.message)){logout();return}const b=$("#adm");if(b)b.innerHTML=`<p class="warn">${esc(e.message)}</p>`}
 }
 function drawAdmin(){
@@ -472,7 +505,8 @@ const RCOLS="id,order_number,client_name,client_phone,service_id,description,pag
 const PS={a_confirmer:"À confirmer",propose:"Proposé au client",accepte:"Accepté",refuse:"Refusé"};
 const VIA={application:"dans l’application",whatsapp:"par WhatsApp ou téléphone",sur_place:"sur place"};
 const WORKOF={recue:"recue",en_traitement:"en_traitement",prete:"terminee",livree:"terminee"};
-const MAXFC=10000000;
+const MAXFC=10000000,MAXFINAL=5,MAXBYTES=20971520;
+let upBusy=false;
 let OPENS=new Set(),NEWCODE={};
 const togg=(k,o)=>{if(o)OPENS.add(k);else OPENS.delete(k)};
 const dday=x=>{if(!x)return"";const d=new Date(x);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
@@ -481,6 +515,57 @@ async function upd(id,body){
  if(!r||!r.length)throw new Error("Modification refusée par le serveur");
  const cur=ADM.find(x=>x.id===id);if(cur)Object.assign(cur,r[0]);
  return r[0];
+}
+function finalPanel(r,op,tg){
+ const L=(r.final_files||[]).slice().sort((a,b)=>String(a.created_at).localeCompare(String(b.created_at))),n=L.length,now=Date.now();
+ const wmsg="Bonjour "+r.client_name+", votre document pour la demande "+r.order_number+" est prêt. Ouvrez l’application "+C.name+" ("+location.origin+"/), rubrique « Mes demandes », puis appuyez sur « Télécharger ». Votre code d’accès est nécessaire. Le document reste disponible 30 jours.";
+ return `<details class="adet"${op("f")} ${tg("f")}><summary>📄 Document final : ${n?n+" fichier"+(n>1?"s":""):"aucun"}</summary><div class="adb">
+  ${L.map(f=>{const exp=new Date(f.expires_at),old=exp.getTime()<=now;return `<div class="fitem"><b>${esc(f.file_name)}</b><small class="mut">${fsz(f.size_bytes)} · ${old?"⚠️ expiré":"expire le "+esc(dt(f.expires_at))}<br>${f.first_downloaded_at?"✅ Téléchargé par le client le "+esc(dt(f.first_downloaded_at))+" ("+f.download_count+" fois)":"Pas encore téléchargé par le client"}</small>
+   <div class="two"><button class="btn o" type="button" onclick="dlFinalAdm('${f.id}')">⬇️ Ouvrir</button><button class="btn o" type="button" onclick="delFinal('${r.id}','${f.id}')">🗑️ Supprimer</button></div></div>`}).join("")}
+  ${n<MAXFINAL?`<label for="ff${r.id}">Ajouter un document (20 Mo maximum, ${MAXFINAL-n} restant${MAXFINAL-n>1?"s":""})</label><input id="ff${r.id}" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"><div class="err" id="fe${r.id}" role="alert"></div><button class="btn w" type="button" onclick="upFinal('${r.id}')">Envoyer ce document</button>`:`<p class="mut">Maximum de ${MAXFINAL} documents atteint. Supprimez-en un pour en ajouter.</p>`}
+  ${n?`<a class="btn g w" href="${wa(wmsg,intl(r.client_phone))}" target="_blank" rel="noopener">💬 Prévenir le client : document prêt</a>`:""}
+  <p class="mut"><small>Les documents sont supprimés automatiquement 30 jours après l’envoi. Le client doit saisir son code d’accès pour les télécharger.</small></p>
+ </div></details>`;
+}
+async function upFinal(id){
+ const r=ADM.find(x=>x.id===id),inp=$("#ff"+id),e=$("#fe"+id);if(!r||!inp||upBusy)return;
+ const f=inp.files&&inp.files[0];
+ if(!f){e.textContent="Choisissez d’abord un fichier.";return}
+ if(f.size<=0||f.size>MAXBYTES){e.textContent="Le fichier doit faire moins de 20 Mo.";return}
+ if(!OK.includes(f.type)){e.textContent="Type de fichier non accepté (PDF, images, Word, Excel, PowerPoint ou texte).";return}
+ if((r.final_files||[]).length>=MAXFINAL){e.textContent="Maximum de "+MAXFINAL+" documents atteint.";return}
+ const m=f.name.toLowerCase().match(/\.([a-z0-9]{1,8})$/),path=id+"/"+crypto.randomUUID()+(m?"."+m[1]:"");
+ upBusy=true;e.textContent="";const b=inp.parentElement.querySelector("button.w");if(b){b.disabled=true;b.textContent="Envoi en cours…"}
+ let sent=false;
+ try{
+  await api("/storage/v1/object/final-documents/"+path,{method:"POST",tok:SES.tok,headers:{"Content-Type":f.type},body:f});sent=true;
+  const row=await api("/rest/v1/final_files?select=*",{method:"POST",tok:SES.tok,headers:{"Content-Type":"application/json",Prefer:"return=representation"},body:JSON.stringify({request_id:id,file_name:f.name.slice(0,200),storage_path:path,size_bytes:f.size})});
+  if(!row||!row.length)throw new Error("Enregistrement refusé par le serveur");
+  sent=false;(r.final_files=r.final_files||[]).push(row[0]);
+  if(r.file_status!=="disponible"||!r.file_available_at)await upd(id,{file_status:"disponible",file_available_at:r.file_available_at||new Date().toISOString()});
+  OPENS.add(id+":f");upBusy=false;drawAdmin();
+ }catch(x){
+  if(sent){try{await api("/storage/v1/object/final-documents/"+path,{method:"DELETE",tok:SES.tok})}catch(y){}}
+  upBusy=false;const e2=$("#fe"+id);if(e2)e2.textContent="Envoi impossible : "+x.message;if(b){b.disabled=false;b.textContent="Envoyer ce document"}
+ }
+}
+async function delFinal(id,fid){
+ const r=ADM.find(x=>x.id===id),f=r&&(r.final_files||[]).find(x=>x.id===fid);if(!f)return;
+ if(!confirm("Supprimer ce document ? Le client ne pourra plus le télécharger."))return;
+ try{
+  try{await api("/storage/v1/object/final-documents/"+f.storage_path,{method:"DELETE",tok:SES.tok})}catch(x){if(!/not.?found|404|introuvable/i.test(x.message))throw x}
+  await api("/rest/v1/final_files?id=eq."+fid,{method:"DELETE",tok:SES.tok});
+  r.final_files=r.final_files.filter(x=>x.id!==fid);
+  if(!r.final_files.length&&r.file_status!=="aucun")await upd(id,{file_status:"aucun",file_available_at:null});
+  OPENS.add(id+":f");drawAdmin();
+ }catch(x){alert("Suppression impossible : "+x.message)}
+}
+async function dlFinalAdm(fid){
+ const f=ADM.flatMap(r=>r.final_files||[]).find(x=>x.id===fid);if(!f)return;
+ try{
+  const s=await api("/storage/v1/object/sign/final-documents/"+f.storage_path,{method:"POST",tok:SES.tok,headers:{"Content-Type":"application/json"},body:JSON.stringify({expiresIn:300})});
+  const a=document.createElement("a");a.href=SUPABASE_URL+"/storage/v1"+s.signedURL+"&download="+encodeURIComponent(f.file_name);document.body.appendChild(a);a.click();a.remove();
+ }catch(e){alert("Ouverture impossible : "+e.message)}
 }
 function adminCard(r){
  const sv=r.services||{},st=CODE.indexOf(r.status),m="Bonjour "+r.client_name+", ici "+C.name+" au sujet de votre demande "+r.order_number+".";
@@ -516,6 +601,7 @@ function adminCard(r){
   <label for="hs${r.id}">Étape</label><select id="hs${r.id}">${Object.keys(HS).map(k=>`<option value="${k}"${k===r.handover_status?" selected":""}>${HS[k]}</option>`).join("")}</select>
   <button class="btn w" onclick="saveHandover('${r.id}')">Enregistrer la remise</button>
  </div></details>
+ ${finalPanel(r,op,tg)}
  <details class="adet"${op("a")} ${tg("a")}><summary>🔑 Accès du client${blocked?" · 🔒 bloqué":""}</summary><div class="adb">
   <p class="mut" style="margin-top:10px">${r.access_code_set_at?"Code créé le "+esc(dt(r.access_code_set_at))+".":"Aucun code (ancienne demande)."} Échecs en cours : ${r.access_failures||0}.</p>
   ${blocked?`<p class="warn">🔒 Accès bloqué jusqu’à ${esc(new Date(r.access_blocked_until).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}))}.</p><button class="btn o w" onclick="unblock('${r.id}')">Débloquer l’accès du client</button>`:""}
