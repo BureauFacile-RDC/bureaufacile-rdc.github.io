@@ -3,7 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>BureauFacile RDC</title>
+<title>BureauFacile RDC – CV, impression, scan et services bureautiques à Kinshasa</title>
+<meta name="description" content="Commandez en ligne votre CV, vos impressions, scans et documents à Kinshasa. Suivi de votre demande et récupération du document final depuis votre téléphone.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://bureaufacile-rdc.github.io/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="fr_CD">
+<meta property="og:site_name" content="BureauFacile RDC">
+<meta property="og:title" content="BureauFacile RDC – CV, impression, scan et services bureautiques à Kinshasa">
+<meta property="og:description" content="Commandez en ligne votre CV, vos impressions, scans et documents à Kinshasa. Suivi de votre demande et récupération du document final depuis votre téléphone.">
+<meta property="og:url" content="https://bureaufacile-rdc.github.io/">
+<meta property="og:image" content="https://bureaufacile-rdc.github.io/icon-512.png">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0d47a1">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
@@ -223,7 +233,7 @@ async function boot(){
   const o=st[0];if(o)cfgOK=true;if(o)C={name:o.business_name||C.name,slogan:o.slogan||C.slogan,whatsapp:o.whatsapp||C.whatsapp,phone:o.phone||C.phone,address:o.address||C.address,hours:o.hours||C.hours,notice:o.price_notice||C.notice};
  }catch(e){loadErr="Impossible de charger les services. Vérifiez votre connexion."}
  loading=false;
- try{$("#brand").textContent=C.name;$("#slogan").textContent=C.slogan;document.title=C.name;render()}finally{endSplash()}
+ try{$("#brand").textContent=C.name;$("#slogan").textContent=C.slogan;render()}finally{endSplash()}
 }
 function go(v,id){view=v;if(id!==undefined)cur=id;render();window.scrollTo(0,0)}
 function render(){
@@ -741,7 +751,7 @@ async function saveSet(){
  try{
   const r=await patch("/rest/v1/settings?id=eq.1",o);ASET=r[0];
   C={name:o.business_name,slogan:o.slogan||C.slogan,whatsapp:o.whatsapp,phone:o.phone,address:o.address,hours:o.hours,notice:o.price_notice||C.notice};
-  $("#brand").textContent=C.name;$("#slogan").textContent=C.slogan;document.title=C.name;
+  $("#brand").textContent=C.name;$("#slogan").textContent=C.slogan;
   er.textContent="";alert("Coordonnées enregistrées.");drawAdmin();
  }catch(e){er.textContent="Enregistrement impossible : "+e.message}
 }
